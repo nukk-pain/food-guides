@@ -60,8 +60,11 @@ describe('App UX flow', () => {
     render(<App />)
 
     expect(await screen.findByRole('heading', { name: '백년가게 식당 지도' })).toBeTruthy()
-    expect(screen.getByRole('button', { name: /전체 식당 지도 보기.*2개/ })).toBeTruthy()
+    expect(screen.getByRole('button', { name: /전체 지도.*2개/ })).toBeTruthy()
     expect(screen.getByRole('searchbox', { name: /검색/ })).toBeTruthy()
+    expect(document.body.textContent).not.toContain('지역 선택')
+    expect(document.body.textContent).not.toContain('검색으로 바로 찾거나 시·도와 시·군·구를 골라 지도를 열어보세요.')
+    expect(document.body.textContent).not.toContain('전체 식당 지도 보기')
     expect(document.body.textContent).not.toContain('상호명이나 주소로 검색하고, 지역을 고르면 바로 지도로 확인할 수 있어요.')
     expect(document.body.textContent).not.toContain('지역별 노포 탐색')
     expect(document.body.textContent).not.toContain('검색 → 지역 선택 → 지도 팝업')
@@ -79,7 +82,7 @@ describe('App UX flow', () => {
     expect(screen.getByText('서울국밥')).toBeTruthy()
     expect(screen.queryByText('고령금산한우')).toBeNull()
 
-    fireEvent.click(screen.getByRole('button', { name: /검색 결과 지도 보기.*1개/ }))
+    fireEvent.click(screen.getByRole('button', { name: /지도 보기.*1개/ }))
 
     await screen.findByTestId('restaurant-map')
     expect(screen.queryByText('서울 종로구')).toBeNull()
@@ -102,7 +105,7 @@ describe('App UX flow', () => {
 
     const countySelect = screen.getByRole('combobox', { name: '시·군·구' })
     fireEvent.change(countySelect, { target: { value: '종로구' } })
-    fireEvent.click(screen.getByRole('button', { name: '선택 지역 지도 보기' }))
+    fireEvent.click(screen.getByRole('button', { name: '지도 보기' }))
 
     await screen.findByTestId('restaurant-map')
     expect(document.body.textContent).not.toContain('표시 중')

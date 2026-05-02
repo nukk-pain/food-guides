@@ -195,15 +195,10 @@ function RegionPicker({
   onAllSelect: () => void
 }) {
   const previewResults = query.trim() ? searchResults.slice(0, 6) : []
-  const primaryMapActionLabel = query.trim() ? '검색 결과 지도 보기' : '전체 식당 지도 보기'
+  const primaryMapActionLabel = query.trim() ? '지도 보기' : '전체 지도'
 
   return (
-    <section className="region-panel" aria-labelledby="region-title">
-      <div className="region-heading">
-        <h2 id="region-title">지역 선택</h2>
-        <p>검색으로 바로 찾거나 시·도와 시·군·구를 골라 지도를 열어보세요.</p>
-      </div>
-
+    <section className="region-panel" aria-label="검색 및 지역 선택">
       <div className="landing-search-card">
         <SearchBox
           value={query}
@@ -227,10 +222,9 @@ function RegionPicker({
         </div>
       )}
 
-      <div className="region-select-grid" aria-label="지역 선택">
-        <label className="select-box">
-          <span>시·도</span>
-          <select value={activeProvince ?? ''} onChange={(event) => onProvinceSelect(event.target.value)}>
+      <div className="region-select-grid" aria-label="지역 필터">
+        <div className="select-box">
+          <select aria-label="시·도" value={activeProvince ?? ''} onChange={(event) => onProvinceSelect(event.target.value)}>
             <option value="">시·도</option>
             {areaOptions.map((option) => (
               <option key={option.province} value={option.province}>
@@ -238,10 +232,9 @@ function RegionPicker({
               </option>
             ))}
           </select>
-        </label>
-        <label className="select-box">
-          <span>시·군·구</span>
-          <select disabled={!activeProvinceOption} value={activeCounty} onChange={(event) => onCountySelect(event.target.value)}>
+        </div>
+        <div className="select-box">
+          <select aria-label="시·군·구" disabled={!activeProvinceOption} value={activeCounty} onChange={(event) => onCountySelect(event.target.value)}>
             <option value="">전체</option>
             {activeProvinceOption?.counties.map((option) => (
               <option key={option.county} value={option.county}>
@@ -249,9 +242,9 @@ function RegionPicker({
               </option>
             ))}
           </select>
-        </label>
+        </div>
         <button className="primary-action" type="button" disabled={!activeProvince} onClick={onAreaOpen}>
-          선택 지역 지도 보기
+          지도 보기
         </button>
       </div>
     </section>
@@ -270,10 +263,9 @@ function SearchBox({
   onChange: (value: string) => void
 }) {
   return (
-    <label className="search-box">
-      <span>{label}</span>
-      <input value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} type="search" />
-    </label>
+    <div className="search-box">
+      <input aria-label={label} value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} type="search" />
+    </div>
   )
 }
 

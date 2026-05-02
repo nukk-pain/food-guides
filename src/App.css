@@ -77,24 +77,9 @@ h1 {
 
 .region-panel {
   display: grid;
-  gap: 20px;
+  gap: 12px;
   margin-top: 16px;
-  padding: clamp(16px, 4vw, 32px);
-}
-
-.region-heading h2 {
-  margin-bottom: 8px;
-  font-size: clamp(1.8rem, 5vw, 2.8rem);
-  line-height: 1;
-  letter-spacing: -0.05em;
-}
-
-.region-heading p:last-child {
-  max-width: 680px;
-  margin-bottom: 0;
-  color: var(--color-muted);
-  font-weight: 650;
-  line-height: 1.55;
+  padding: clamp(16px, 4vw, 28px);
 }
 
 .landing-search-card,
