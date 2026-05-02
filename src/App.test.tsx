@@ -85,7 +85,9 @@ describe('App UX flow', () => {
 
     fireEvent.click(screen.getByRole('button', { name: '서울국밥' }))
 
-    expect(screen.getByText('서울특별시 종로구 종로 1')).toBeTruthy()
+    const detailCard = screen.getByText('서울특별시 종로구 종로 1').closest('.map-detail-card')
+    expect(detailCard).toBeTruthy()
+    expect(detailCard?.previousElementSibling?.classList.contains('map-panel')).toBe(true)
     await waitFor(() => expect(screen.getByRole('link', { name: '전화하기' }).getAttribute('href')).toBe('tel:021234567'))
   })
 

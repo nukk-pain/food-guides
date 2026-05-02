@@ -13,9 +13,7 @@ const restaurant = {
 }
 
 describe('restaurant map popup', () => {
-  it('renders escaped restaurant information for marker popups', () => {
-    expect(restaurantPopupHtml(restaurant)).toBe(
-      '<strong>서울국밥 &lt;맛집&gt;</strong><br />서울특별시 종로구 종로 1<br /><small>음식점업</small>',
-    )
+  it('renders only the escaped restaurant name for compact marker popups', () => {
+    expect(restaurantPopupHtml(restaurant)).toBe('<strong>서울국밥 &lt;맛집&gt;</strong>')
   })
 })

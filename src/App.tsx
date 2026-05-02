@@ -151,16 +151,16 @@ function App() {
         <section className="content-grid" aria-label="백년가게 식당 지도">
           <div className="map-panel">
             <RestaurantMap restaurants={filteredRestaurants} selectedId={selectedRestaurant?.id} onSelect={handleSelect} />
-            {selectedRestaurant && (
-              <div className="map-selected-card">
-                <SelectedRestaurantCard
-                  copied={copiedRestaurantId === selectedRestaurant.id}
-                  restaurant={selectedRestaurant}
-                  onCopyAddress={handleCopyAddress}
-                />
-              </div>
-            )}
           </div>
+          {selectedRestaurant && (
+            <div className="map-detail-card">
+              <SelectedRestaurantCard
+                copied={copiedRestaurantId === selectedRestaurant.id}
+                restaurant={selectedRestaurant}
+                onCopyAddress={handleCopyAddress}
+              />
+            </div>
+          )}
         </section>
       )}
     </main>
