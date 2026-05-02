@@ -4,7 +4,15 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App'
 
 vi.mock('./components/RestaurantMap', () => ({
-  RestaurantMap: ({ restaurants }: { restaurants: unknown[] }) => <div data-testid="restaurant-map">지도 {restaurants.length}개</div>,
+  RestaurantMap: ({ restaurants, onSelect }: { restaurants: typeof sampleRestaurants; onSelect: (restaurant: (typeof sampleRestaurants)[number]) => void }) => (
+    <div data-testid="restaurant-map">
+      {restaurants.map((restaurant) => (
+        <button key={restaurant.id} type="button" onClick={() => onSelect(restaurant)}>
+          {restaurant.name}
+        </button>
+      ))}
+    </div>
+  ),
 }))
 
 const sampleRestaurants = [
@@ -70,9 +78,14 @@ describe('App UX flow', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /전국 1개 식당/ }))
 
-    expect((await screen.findByTestId('restaurant-map')).textContent).toBe('지도 1개')
-    expect(screen.getAllByText('서울 종로구').length).toBeGreaterThan(0)
+    await screen.findByTestId('restaurant-map')
+    expect(screen.queryByText('서울 종로구')).toBeNull()
+    expect(document.body.textContent).not.toContain('표시 중')
     expect(document.body.textContent).not.toContain('곳')
+
+    fireEvent.click(screen.getByRole('button', { name: '서울국밥' }))
+
+    expect(screen.getByText('서울특별시 종로구 종로 1')).toBeTruthy()
     await waitFor(() => expect(screen.getByRole('link', { name: '전화하기' }).getAttribute('href')).toBe('tel:021234567'))
   })
 
@@ -86,7 +99,12 @@ describe('App UX flow', () => {
     fireEvent.change(countySelect, { target: { value: '종로구' } })
     fireEvent.click(screen.getByRole('button', { name: '지도' }))
 
-    expect((await screen.findByTestId('restaurant-map')).textContent).toBe('지도 1개')
-    expect(screen.getAllByText('서울국밥').length).toBeGreaterThan(0)
+    await screen.findByTestId('restaurant-map')
+    expect(document.body.textContent).not.toContain('표시 중')
+    expect(screen.queryByText('서울특별시 종로구 종로 1')).toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: '서울국밥' }))
+
+    expect(screen.getByText('서울특별시 종로구 종로 1')).toBeTruthy()
   })
 })

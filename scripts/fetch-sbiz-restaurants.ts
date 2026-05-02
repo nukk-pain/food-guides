@@ -1,4 +1,5 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, rename, writeFile } from 'node:fs/promises'
+import { createHash } from 'node:crypto'
 import { existsSync } from 'node:fs'
 import { setTimeout as delay } from 'node:timers/promises'
 import {
@@ -15,6 +16,8 @@ import {
 import { geocodeRoadAddressWithJuso } from '../src/sbiz/jusoGeocoder'
 import { geocodeAddressWithKakao } from '../src/sbiz/kakaoGeocoder'
 import { geocodeAddressWithArcGis } from '../src/sbiz/arcgisGeocoder'
+import { createRestaurantDataManifest, validateRestaurantData } from '../src/data/validateRestaurantData'
+import type { Restaurant } from '../src/domain/restaurants'
 
 type GeocodeProvider = 'nominatim' | 'juso' | 'kakao' | 'arcgis'
 
@@ -29,6 +32,8 @@ type CliOptions = {
 const RAW_OUTPUT_PATH = 'data/raw/sbiz-restaurants.json'
 const GEOCODE_CACHE_PATH = 'data/geocode-cache.json'
 const PUBLIC_OUTPUT_PATH = 'public/data/restaurants.json'
+const PUBLIC_OUTPUT_TMP_PATH = 'public/data/restaurants.tmp.json'
+const MANIFEST_OUTPUT_PATH = 'data/manifest.json'
 const USER_AGENT = 'baeknyeon-restaurant-map/0.1 (https://www.sbiz.or.kr/hdst/main/ohndMarketList.do)'
 
 async function main() {
@@ -44,7 +49,7 @@ async function main() {
 
   const publicRows = toPublicRestaurantRows(rows, cache)
   if (publicRows.length > 0) {
-    await writeJson(PUBLIC_OUTPUT_PATH, publicRows)
+    await writeValidatedPublicData(publicRows)
   }
 
   console.log(
@@ -224,6 +229,21 @@ async function writeJson(path: string, data: unknown) {
   const directory = path.split('/').slice(0, -1).join('/')
   await mkdir(directory, { recursive: true })
   await writeFile(path, `${JSON.stringify(data, null, 2)}\n`)
+}
+
+async function writeValidatedPublicData(rows: Restaurant[]) {
+  const candidateJson = `${JSON.stringify(rows, null, 2)}\n`
+  const validation = validateRestaurantData(JSON.parse(candidateJson))
+  if (!validation.ok) {
+    throw new Error(`Refusing to write invalid public data:\n${validation.errors.map((error) => `- ${error}`).join('\n')}`)
+  }
+
+  await mkdir(PUBLIC_OUTPUT_PATH.split('/').slice(0, -1).join('/'), { recursive: true })
+  await writeFile(PUBLIC_OUTPUT_TMP_PATH, candidateJson)
+  await rename(PUBLIC_OUTPUT_TMP_PATH, PUBLIC_OUTPUT_PATH)
+
+  const manifest = createRestaurantDataManifest(rows, createHash('sha256').update(candidateJson).digest('hex'))
+  await writeJson(MANIFEST_OUTPUT_PATH, manifest)
 }
 
 function dedupeRows(rows: SbizListRow[]): SbizListRow[] {

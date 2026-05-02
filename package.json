@@ -9,6 +9,9 @@
     "lint": "eslint .",
     "test": "vitest run",
     "fetch:data": "tsx scripts/fetch-sbiz-restaurants.ts",
+    "validate:data": "tsx scripts/validate-data.ts",
+    "write:data-manifest": "tsx scripts/validate-data.ts --write-manifest",
+    "check": "npm run lint && npm test && npm run validate:data && npm run build",
     "preview": "vite preview"
   },
   "dependencies": {

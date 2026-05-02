@@ -68,7 +68,7 @@ function App() {
   const filteredRestaurants = useMemo(() => searchRestaurants(scopedRestaurants, query), [query, scopedRestaurants])
 
   const selectedRestaurant = useMemo(
-    () => filteredRestaurants.find((restaurant) => restaurant.id === selectedRestaurantId) ?? filteredRestaurants[0] ?? null,
+    () => filteredRestaurants.find((restaurant) => restaurant.id === selectedRestaurantId) ?? null,
     [filteredRestaurants, selectedRestaurantId],
   )
 
@@ -102,13 +102,6 @@ function App() {
     setSelectedRestaurantId(null)
   }, [])
 
-  const handleChangeArea = useCallback(() => {
-    setMapScope(null)
-    setSelectedRestaurantId(null)
-    setActiveProvince(mapScope && mapScope !== 'all' ? mapScope.province : activeProvince)
-    setActiveCounty(mapScope && mapScope !== 'all' ? mapScope.county ?? '' : activeCounty)
-  }, [activeCounty, activeProvince, mapScope])
-
   const handleCopyAddress = useCallback(async (restaurant: Restaurant) => {
     const writeText = navigator.clipboard?.writeText
     if (typeof writeText !== 'function') {
@@ -123,8 +116,6 @@ function App() {
       setCopiedRestaurantId(null)
     }
   }, [])
-
-  const selectedAreaLabel = getScopeLabel(mapScope, query)
 
   return (
     <main className="app-shell">
@@ -157,46 +148,19 @@ function App() {
       )}
 
       {loadState === 'ready' && mapScope && (
-        <section className="content-grid" aria-label="백년가게 식당 지도와 목록">
+        <section className="content-grid" aria-label="백년가게 식당 지도">
           <div className="map-panel">
             <RestaurantMap restaurants={filteredRestaurants} selectedId={selectedRestaurant?.id} onSelect={handleSelect} />
-            <div className="stats-card" aria-live="polite">
-              <strong>{filteredRestaurants.length.toLocaleString('ko-KR')}</strong>
-              <span>{selectedAreaLabel} 표시 중</span>
-            </div>
-          </div>
-          <aside className="list-panel" aria-label="백년가게 식당 목록과 검색">
-            <section className="toolbar" aria-label="검색">
-              <div className="selected-area-row">
-                <span>{selectedAreaLabel}</span>
-                <button type="button" onClick={handleChangeArea}>
-                  지역
-                </button>
-              </div>
-              <SearchBox value={query} onChange={setQuery} label="검색" placeholder="상호·주소" />
-            </section>
             {selectedRestaurant && (
-              <SelectedRestaurantCard
-                copied={copiedRestaurantId === selectedRestaurant.id}
-                restaurant={selectedRestaurant}
-                onCopyAddress={handleCopyAddress}
-              />
+              <div className="map-selected-card">
+                <SelectedRestaurantCard
+                  copied={copiedRestaurantId === selectedRestaurant.id}
+                  restaurant={selectedRestaurant}
+                  onCopyAddress={handleCopyAddress}
+                />
+              </div>
             )}
-            {filteredRestaurants.length === 0 ? (
-              <p className="empty-list">검색 결과가 없습니다. 검색어를 줄이거나 지역을 다시 선택해보세요.</p>
-            ) : (
-              <ul className="restaurant-list">
-                {filteredRestaurants.map((restaurant) => (
-                  <RestaurantListItem
-                    key={restaurant.id}
-                    restaurant={restaurant}
-                    selected={restaurant.id === selectedRestaurant?.id}
-                    onSelect={handleSelect}
-                  />
-                ))}
-              </ul>
-            )}
-          </aside>
+          </div>
         </section>
       )}
     </main>
@@ -358,26 +322,6 @@ function SelectedRestaurantCard({
   )
 }
 
-function RestaurantListItem({
-  restaurant,
-  selected,
-  onSelect,
-}: {
-  restaurant: Restaurant
-  selected: boolean
-  onSelect: (restaurant: Restaurant) => void
-}) {
-  return (
-    <li>
-      <button className={selected ? 'restaurant-list-button restaurant-list-button--selected' : 'restaurant-list-button'} type="button" onClick={() => onSelect(restaurant)}>
-        <strong>{restaurant.name}</strong>
-        <span>{formatRestaurantArea(restaurant)}</span>
-        <small>{restaurant.address}</small>
-      </button>
-    </li>
-  )
-}
-
 function StatusCard({ title, description }: { title: string; description: string }) {
   return (
     <section className="status-card" role="status">
@@ -403,12 +347,6 @@ function formatRestaurantArea(restaurant: Restaurant): string {
   const province = getProvinceLabel(restaurant.address)
   const county = getCountyLabel(restaurant.address)
   return [province, county].filter(Boolean).join(' ')
-}
-
-function getScopeLabel(scope: MapScope, query: string): string {
-  if (scope === 'all') return query.trim() ? '전국 검색 결과' : '전국'
-  if (!scope) return ''
-  return `${scope.province}${scope.county ? ` ${scope.county}` : ' 전체'}`
 }
 
 export default App

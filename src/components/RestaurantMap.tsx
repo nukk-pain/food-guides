@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react'
 import L from 'leaflet'
 import type { Restaurant } from '../domain/restaurants'
+import { restaurantPopupHtml } from './restaurantPopupHtml'
 
 type RestaurantMapProps = {
   restaurants: Restaurant[]
@@ -63,11 +64,7 @@ export function RestaurantMap({ restaurants, selectedId, onSelect }: RestaurantM
         title: restaurant.name,
       })
 
-      marker.bindPopup(
-        `<strong>${escapeHtml(restaurant.name)}</strong><br />${escapeHtml(restaurant.address)}<br /><small>${escapeHtml(
-          restaurant.category,
-        )}</small>`,
-      )
+      marker.bindPopup(restaurantPopupHtml(restaurant))
       marker.on('click', () => onSelect(restaurant))
       marker.addTo(markerLayer)
     })
@@ -79,8 +76,4 @@ export function RestaurantMap({ restaurants, selectedId, onSelect }: RestaurantM
   }, [bounds])
 
   return <div ref={mapElementRef} className="restaurant-map" aria-label="백년가게 식당 지도" />
-}
-
-function escapeHtml(value: string): string {
-  return value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;')
 }
