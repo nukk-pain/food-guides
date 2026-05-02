@@ -1,4 +1,5 @@
 import type { Restaurant } from './restaurants'
+import { normalizeMetropolitanAddress } from './restaurants'
 
 export type AreaSelection = {
   province: string
@@ -61,12 +62,12 @@ const PROVINCE_ORDER = [
 ]
 
 export function getProvinceLabel(address: string): string {
-  const firstToken = address.trim().split(/\s+/)[0] ?? ''
+  const firstToken = normalizeMetropolitanAddress(address).trim().split(/\s+/)[0] ?? ''
   return PROVINCE_LABELS[firstToken] ?? firstToken
 }
 
 export function getCountyLabel(address: string): string {
-  return address.trim().split(/\s+/)[1] ?? ''
+  return normalizeMetropolitanAddress(address).trim().split(/\s+/)[1] ?? ''
 }
 
 export function getAreaOptions(restaurants: Restaurant[]): ProvinceOption[] {

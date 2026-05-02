@@ -75,4 +75,18 @@ describe('App UX flow', () => {
     expect(document.body.textContent).not.toContain('곳')
     await waitFor(() => expect(screen.getByRole('link', { name: '전화하기' }).getAttribute('href')).toBe('tel:021234567'))
   })
+
+  it('uses province and county dropdowns before opening the map', async () => {
+    render(<App />)
+
+    const provinceSelect = await screen.findByRole('combobox', { name: '시·도' })
+    fireEvent.change(provinceSelect, { target: { value: '서울' } })
+
+    const countySelect = screen.getByRole('combobox', { name: '시·군·구' })
+    fireEvent.change(countySelect, { target: { value: '종로구' } })
+    fireEvent.click(screen.getByRole('button', { name: '지도' }))
+
+    expect((await screen.findByTestId('restaurant-map')).textContent).toBe('지도 1개')
+    expect(screen.getAllByText('서울국밥').length).toBeGreaterThan(0)
+  })
 })

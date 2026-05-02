@@ -4,7 +4,14 @@ import { RestaurantMap } from './components/RestaurantMap'
 import { restaurantsDataUrl } from './data/restaurantsData'
 import { copyableAddressText, buildMapLinks, normalizePhoneHref, safeSbizDetailUrl } from './domain/mapLinks'
 import { filterRestaurantStores, type RawRestaurant, type Restaurant } from './domain/restaurants'
-import { filterByArea, getAreaOptions, type AreaSelection, type ProvinceOption } from './domain/regions'
+import {
+  filterByArea,
+  getAreaOptions,
+  getCountyLabel,
+  getProvinceLabel,
+  type AreaSelection,
+  type ProvinceOption,
+} from './domain/regions'
 
 type LoadState = 'loading' | 'ready' | 'empty' | 'error'
 type MapScope = 'all' | AreaSelection | null
@@ -15,6 +22,7 @@ function App() {
   const [query, setQuery] = useState('')
   const [mapScope, setMapScope] = useState<MapScope>(null)
   const [activeProvince, setActiveProvince] = useState<string | null>(null)
+  const [activeCounty, setActiveCounty] = useState('')
   const [selectedRestaurantId, setSelectedRestaurantId] = useState<string | null>(null)
   const [copiedRestaurantId, setCopiedRestaurantId] = useState<string | null>(null)
 
@@ -69,14 +77,25 @@ function App() {
   }, [])
 
   const handleProvinceSelect = useCallback((province: string) => {
-    setActiveProvince(province)
+    setActiveProvince(province || null)
+    setActiveCounty('')
+  }, [])
+
+  const handleCountySelect = useCallback((county: string) => {
+    setActiveCounty(county)
   }, [])
 
   const handleAreaSelect = useCallback((selection: AreaSelection) => {
     setMapScope(selection)
     setActiveProvince(selection.province)
+    setActiveCounty(selection.county ?? '')
     setSelectedRestaurantId(null)
   }, [])
+
+  const handleSelectedAreaOpen = useCallback(() => {
+    if (!activeProvince) return
+    handleAreaSelect({ province: activeProvince, ...(activeCounty ? { county: activeCounty } : {}) })
+  }, [activeCounty, activeProvince, handleAreaSelect])
 
   const handleAllSelect = useCallback(() => {
     setMapScope('all')
@@ -87,7 +106,8 @@ function App() {
     setMapScope(null)
     setSelectedRestaurantId(null)
     setActiveProvince(mapScope && mapScope !== 'all' ? mapScope.province : activeProvince)
-  }, [activeProvince, mapScope])
+    setActiveCounty(mapScope && mapScope !== 'all' ? mapScope.county ?? '' : activeCounty)
+  }, [activeCounty, activeProvince, mapScope])
 
   const handleCopyAddress = useCallback(async (restaurant: Restaurant) => {
     const writeText = navigator.clipboard?.writeText
@@ -124,12 +144,14 @@ function App() {
           allCount={searchFilteredRestaurants.length}
           areaOptions={areaOptions}
           activeProvince={activeProvince}
+          activeCounty={activeCounty}
           activeProvinceOption={activeProvinceOption}
           query={query}
           searchResults={searchFilteredRestaurants}
           onQueryChange={setQuery}
           onProvinceSelect={handleProvinceSelect}
-          onAreaSelect={handleAreaSelect}
+          onCountySelect={handleCountySelect}
+          onAreaOpen={handleSelectedAreaOpen}
           onAllSelect={handleAllSelect}
         />
       )}
@@ -185,23 +207,27 @@ function RegionPicker({
   allCount,
   areaOptions,
   activeProvince,
+  activeCounty,
   activeProvinceOption,
   query,
   searchResults,
   onQueryChange,
   onProvinceSelect,
-  onAreaSelect,
+  onCountySelect,
+  onAreaOpen,
   onAllSelect,
 }: {
   allCount: number
   areaOptions: ProvinceOption[]
   activeProvince: string | null
+  activeCounty: string
   activeProvinceOption: ProvinceOption | null
   query: string
   searchResults: Restaurant[]
   onQueryChange: (query: string) => void
   onProvinceSelect: (province: string) => void
-  onAreaSelect: (selection: AreaSelection) => void
+  onCountySelect: (county: string) => void
+  onAreaOpen: () => void
   onAllSelect: () => void
 }) {
   const previewResults = query.trim() ? searchResults.slice(0, 6) : []
@@ -229,48 +255,39 @@ function RegionPicker({
           {previewResults.map((restaurant) => (
             <button key={restaurant.id} type="button" onClick={onAllSelect}>
               <strong>{restaurant.name}</strong>
-              <span>{restaurant.region}</span>
+              <span>{formatRestaurantArea(restaurant)}</span>
             </button>
           ))}
         </div>
       )}
 
-      <div className="province-grid" aria-label="시도 선택">
-        {areaOptions.map((option) => (
-          <button
-            className={option.province === activeProvince ? 'province-button province-button--active' : 'province-button'}
-            key={option.province}
-            type="button"
-            onClick={() => onProvinceSelect(option.province)}
-          >
-            <strong>{option.province}</strong>
-            <span>{option.count.toLocaleString('ko-KR')}개</span>
-          </button>
-        ))}
-      </div>
-
-      {activeProvinceOption ? (
-        <div className="county-panel" aria-label={`${activeProvinceOption.province} 시군구 선택`}>
-          <button className="county-button county-button--primary" type="button" onClick={() => onAreaSelect({ province: activeProvinceOption.province })}>
-            {activeProvinceOption.province} 전체
-          </button>
-          <div className="county-grid">
-            {activeProvinceOption.counties.map((option) => (
-              <button
-                className="county-button"
-                key={option.county}
-                type="button"
-                onClick={() => onAreaSelect({ province: activeProvinceOption.province, county: option.county })}
-              >
-                <strong>{option.county}</strong>
-                <span>{option.count.toLocaleString('ko-KR')}개</span>
-              </button>
+      <div className="region-select-grid" aria-label="지역 선택">
+        <label className="select-box">
+          <span>시·도</span>
+          <select value={activeProvince ?? ''} onChange={(event) => onProvinceSelect(event.target.value)}>
+            <option value="">시·도</option>
+            {areaOptions.map((option) => (
+              <option key={option.province} value={option.province}>
+                {option.province} ({option.count.toLocaleString('ko-KR')})
+              </option>
             ))}
-          </div>
-        </div>
-      ) : (
-        <p className="region-hint">시·도 선택</p>
-      )}
+          </select>
+        </label>
+        <label className="select-box">
+          <span>시·군·구</span>
+          <select disabled={!activeProvinceOption} value={activeCounty} onChange={(event) => onCountySelect(event.target.value)}>
+            <option value="">전체</option>
+            {activeProvinceOption?.counties.map((option) => (
+              <option key={option.county} value={option.county}>
+                {option.county} ({option.count.toLocaleString('ko-KR')})
+              </option>
+            ))}
+          </select>
+        </label>
+        <button className="primary-action" type="button" disabled={!activeProvince} onClick={onAreaOpen}>
+          지도
+        </button>
+      </div>
     </section>
   )
 }
@@ -354,7 +371,7 @@ function RestaurantListItem({
     <li>
       <button className={selected ? 'restaurant-list-button restaurant-list-button--selected' : 'restaurant-list-button'} type="button" onClick={() => onSelect(restaurant)}>
         <strong>{restaurant.name}</strong>
-        <span>{restaurant.region}</span>
+        <span>{formatRestaurantArea(restaurant)}</span>
         <small>{restaurant.address}</small>
       </button>
     </li>
@@ -380,6 +397,12 @@ function searchRestaurants(restaurants: Restaurant[], query: string): Restaurant
       .toLocaleLowerCase('ko-KR')
     return haystack.includes(normalizedQuery)
   })
+}
+
+function formatRestaurantArea(restaurant: Restaurant): string {
+  const province = getProvinceLabel(restaurant.address)
+  const county = getCountyLabel(restaurant.address)
+  return [province, county].filter(Boolean).join(' ')
 }
 
 function getScopeLabel(scope: MapScope, query: string): string {

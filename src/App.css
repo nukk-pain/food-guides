@@ -118,11 +118,10 @@ h1 {
 }
 
 .search-box input:focus-visible,
+.select-box select:focus-visible,
 .primary-action:focus-visible,
 .action-button:focus-visible,
 .map-link-row a:focus-visible,
-.province-button:focus-visible,
-.county-button:focus-visible,
 .restaurant-list-button:focus-visible,
 .selected-area-row button:focus-visible,
 .search-preview button:focus-visible {
@@ -153,10 +152,15 @@ h1 {
 }
 
 .primary-action:hover,
-.action-button--primary:hover,
-.county-button--primary:hover,
-.province-button--active:hover {
+.action-button--primary:hover {
   background: var(--color-primary-strong);
+}
+
+.primary-action:disabled {
+  cursor: not-allowed;
+  border-color: #c9c2b4;
+  color: #7f897f;
+  background: #e7e2d8;
 }
 
 .search-preview {
@@ -183,55 +187,46 @@ h1 {
   font-weight: 700;
 }
 
-.province-grid,
-.county-grid {
+.region-select-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
-  gap: 8px;
+  gap: 12px;
+  border: 1px solid var(--color-line);
+  border-radius: 20px;
+  padding: 16px;
+  background: var(--color-surface-strong);
 }
 
-.province-button,
-.county-button {
+.select-box {
   display: grid;
-  min-height: 48px;
-  gap: 4px;
-  border: 1px solid var(--color-line);
+  gap: 8px;
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.select-box select {
+  width: 100%;
+  min-height: 52px;
+  appearance: none;
+  border: 1px solid #d6cfbf;
   border-radius: var(--radius-control);
-  padding: 12px;
-  text-align: left;
-  color: #26342a;
-  background: #fff;
+  padding: 14px 42px 14px 16px;
+  color: var(--color-ink);
+  background:
+    linear-gradient(45deg, transparent 50%, var(--color-primary) 50%) right 18px center / 7px 7px no-repeat,
+    linear-gradient(135deg, var(--color-primary) 50%, transparent 50%) right 12px center / 7px 7px no-repeat,
+    #fff;
   font: inherit;
   font-weight: 900;
 }
 
-.province-button span,
-.county-button span {
-  color: var(--color-soft);
-  font-size: 0.84rem;
-  font-weight: 700;
-}
-
-.province-button--active,
-.county-button--primary {
-  border-color: var(--color-primary);
-  color: #fff;
-  background: var(--color-primary);
-}
-
-.province-button--active span,
-.county-button--primary span {
-  color: rgba(255, 255, 255, 0.78);
-}
-
-.county-panel {
-  display: grid;
-  gap: 12px;
-}
-
-.county-button--primary {
-  text-align: center;
-  justify-content: center;
+.select-box select:disabled {
+  cursor: not-allowed;
+  color: #7f897f;
+  background:
+    linear-gradient(45deg, transparent 50%, #7f897f 50%) right 18px center / 7px 7px no-repeat,
+    linear-gradient(135deg, #7f897f 50%, transparent 50%) right 12px center / 7px 7px no-repeat,
+    #f3efe7;
 }
 
 .region-hint,
@@ -464,9 +459,8 @@ h1 {
     font-size: clamp(2.2rem, 13vw, 4rem);
   }
 
-  .province-grid,
-  .county-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .region-select-grid {
+    grid-template-columns: 1fr;
   }
 
   .map-panel,
@@ -485,6 +479,11 @@ h1 {
 @media (min-width: 861px) {
   .landing-search-card {
     grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+  }
+
+  .region-select-grid {
+    grid-template-columns: minmax(180px, 1fr) minmax(180px, 1fr) auto;
     align-items: end;
   }
 

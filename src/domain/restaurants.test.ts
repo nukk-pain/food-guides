@@ -31,7 +31,12 @@ describe('restaurant domain helpers', () => {
       },
     ]
 
-    expect(filterRestaurantStores(input)).toEqual([input[0]])
+    expect(filterRestaurantStores(input)).toEqual([
+      {
+        ...input[0],
+        address: '서울특별시 종로구 테스트로 1',
+      },
+    ])
   })
 
   it('normalizes raw source rows into the app data contract', () => {
@@ -52,7 +57,7 @@ describe('restaurant domain helpers', () => {
       name: '원조국밥',
       category: '한식 음식점업',
       region: '부산광역시 해운대구',
-      address: '부산 해운대구 달맞이길 1',
+      address: '부산광역시 해운대구 달맞이길 1',
       lat: 35.1587,
       lng: 129.1604,
       phone: '051-000-0000',
