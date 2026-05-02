@@ -14,8 +14,9 @@ import {
 } from '../src/sbiz/parser'
 import { geocodeRoadAddressWithJuso } from '../src/sbiz/jusoGeocoder'
 import { geocodeAddressWithKakao } from '../src/sbiz/kakaoGeocoder'
+import { geocodeAddressWithArcGis } from '../src/sbiz/arcgisGeocoder'
 
-type GeocodeProvider = 'nominatim' | 'juso' | 'kakao'
+type GeocodeProvider = 'nominatim' | 'juso' | 'kakao' | 'arcgis'
 
 type CliOptions = {
   maxPages?: number
@@ -141,6 +142,15 @@ async function geocodeAddress(
     return null
   }
 
+  if (options.geocodeProvider === 'arcgis') {
+    for (const query of geocodeQueryVariants(address)) {
+      const point = await geocodeAddressWithArcGis(query)
+      if (point) return point
+      await delay(options.delayMs)
+    }
+    return null
+  }
+
   for (const query of geocodeQueryVariants(address)) {
     const point = await geocodeQuery(query)
     if (point) return point
@@ -185,7 +195,7 @@ function parseArgs(args: string[]): CliOptions {
     if (arg.startsWith('--delay-ms=')) options.delayMs = Number(arg.replace('--delay-ms=', ''))
     if (arg.startsWith('--geocode-provider=')) {
       const provider = arg.replace('--geocode-provider=', '')
-      if (provider !== 'nominatim' && provider !== 'juso' && provider !== 'kakao') {
+      if (provider !== 'nominatim' && provider !== 'juso' && provider !== 'kakao' && provider !== 'arcgis') {
         throw new Error(`Unsupported geocode provider: ${provider}`)
       }
       options.geocodeProvider = provider
