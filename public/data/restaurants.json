@@ -1,0 +1,145 @@
+[
+  {
+    "id": "20240059799",
+    "name": "고령금산한우",
+    "category": "음식점업",
+    "region": "경상북도 고령군",
+    "address": "경상북도 고령군 성산면 성산로 946-5",
+    "lat": 35.7388989,
+    "lng": 128.3247471,
+    "phone": "0549564484",
+    "sourceUrl": "https://www.sbiz.or.kr/hdst/main/ohndMarketDetail.do?rcpnNo=20240059799"
+  },
+  {
+    "id": "20230021133",
+    "name": "도투리 샤브칼국수 불광천",
+    "category": "음식점업",
+    "region": "서울특별시 은평구",
+    "address": "서울특별시 은평구 증산로 303 (증산동, 태광아파트)",
+    "lat": 37.5841211,
+    "lng": 126.9095155,
+    "phone": "023743202",
+    "sourceUrl": "https://www.sbiz.or.kr/hdst/main/ohndMarketDetail.do?rcpnNo=20230021133"
+  },
+  {
+    "id": "HND004707",
+    "name": "완산정",
+    "category": "음식점업",
+    "region": "경기도 군포시",
+    "address": "경기도 군포시 번영로 508(금정동)",
+    "lat": 37.3320554,
+    "lng": 126.927272,
+    "phone": "0313919933",
+    "sourceUrl": "https://www.sbiz.or.kr/hdst/main/ohndMarketDetail.do?rcpnNo=HND004707"
+  },
+  {
+    "id": "HND004784",
+    "name": "오리산성",
+    "category": "음식점업",
+    "region": "경상북도 구미시",
+    "address": "경상북도 구미시 박정희로 320-5 (광평동)",
+    "lat": 36.1109623,
+    "lng": 128.3564133,
+    "phone": "0544555929",
+    "sourceUrl": "https://www.sbiz.or.kr/hdst/main/ohndMarketDetail.do?rcpnNo=HND004784"
+  },
+  {
+    "id": "20230022179",
+    "name": "용궁순대",
+    "category": "음식점업",
+    "region": "경상북도 예천군",
+    "address": "경상북도 예천군 용궁면 용궁로 150",
+    "lat": 36.6084554,
+    "lng": 128.2900823,
+    "phone": "0546554554",
+    "sourceUrl": "https://www.sbiz.or.kr/hdst/main/ohndMarketDetail.do?rcpnNo=20230022179"
+  },
+  {
+    "id": "HND003086",
+    "name": "손두부전문점",
+    "category": "음식점업",
+    "region": "경상남도 양산시",
+    "address": "경상남도 양산시 신기1길 13(신기동)",
+    "lat": 35.3511582,
+    "lng": 129.043879,
+    "phone": "0553817492",
+    "sourceUrl": "https://www.sbiz.or.kr/hdst/main/ohndMarketDetail.do?rcpnNo=HND003086"
+  },
+  {
+    "id": "20240060815",
+    "name": "금오산고향촌식당",
+    "category": "음식점업",
+    "region": "경상북도 구미시",
+    "address": "경상북도 구미시 남통동 금오산상가길 35-11",
+    "lat": 36.1117735,
+    "lng": 128.3151848,
+    "phone": "0544553010",
+    "sourceUrl": "https://www.sbiz.or.kr/hdst/main/ohndMarketDetail.do?rcpnNo=20240060815"
+  },
+  {
+    "id": "20230020694",
+    "name": "옛날중국집",
+    "category": "음식점업",
+    "region": "서울특별시 성북구",
+    "address": "서울특별시 성북구 성북로8길 8 (성북동)",
+    "lat": 37.5915336,
+    "lng": 127.0054812,
+    "phone": "027640094",
+    "sourceUrl": "https://www.sbiz.or.kr/hdst/main/ohndMarketDetail.do?rcpnNo=20230020694"
+  },
+  {
+    "id": "20230020572",
+    "name": "예원",
+    "category": "음식점업",
+    "region": "전라남도 구례군",
+    "address": "전라남도 구례군 마산면 화엄사로 381",
+    "lat": 35.2435587,
+    "lng": 127.4882618,
+    "phone": "0617829917",
+    "sourceUrl": "https://www.sbiz.or.kr/hdst/main/ohndMarketDetail.do?rcpnNo=20230020572"
+  },
+  {
+    "id": "20230028316",
+    "name": "달동네마늘순대",
+    "category": "음식점업",
+    "region": "충청북도 단양군",
+    "address": "충청북도 단양군 단양읍 수변로 73",
+    "lat": 36.9820068,
+    "lng": 128.3707113,
+    "phone": "0434230644",
+    "sourceUrl": "https://www.sbiz.or.kr/hdst/main/ohndMarketDetail.do?rcpnNo=20230028316"
+  },
+  {
+    "id": "20230021441",
+    "name": "달빛뜨락",
+    "category": "음식점업",
+    "region": "전라남도 담양군",
+    "address": "전라남도 담양군 봉산면 한수동로 155",
+    "lat": 35.2695944,
+    "lng": 126.9567952,
+    "phone": "01086099743",
+    "sourceUrl": "https://www.sbiz.or.kr/hdst/main/ohndMarketDetail.do?rcpnNo=20230021441"
+  },
+  {
+    "id": "20230021756",
+    "name": "오금버드나무집",
+    "category": "음식점업",
+    "region": "서울특별시 송파구",
+    "address": "서울특별시 송파구 동남로 309 (오금동)",
+    "lat": 37.5027284,
+    "lng": 127.1378678,
+    "phone": "024088000",
+    "sourceUrl": "https://www.sbiz.or.kr/hdst/main/ohndMarketDetail.do?rcpnNo=20230021756"
+  },
+  {
+    "id": "HND003106",
+    "name": "진부령식당",
+    "category": "음식점업",
+    "region": "강원도 인제군",
+    "address": "강원도 인제군 북면 진부령로 100",
+    "lat": 38.235651,
+    "lng": 128.361593,
+    "phone": "0334621877",
+    "sourceUrl": "https://www.sbiz.or.kr/hdst/main/ohndMarketDetail.do?rcpnNo=HND003106"
+  }
+]

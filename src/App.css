@@ -1,0 +1,222 @@
+.app-shell {
+  width: min(1180px, calc(100% - 24px));
+  margin: 0 auto;
+  padding: 24px 0 40px;
+}
+
+.hero-panel,
+.toolbar,
+.status-card,
+.selected-card,
+.list-panel {
+  border: 1px solid rgba(42, 64, 48, 0.13);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 20px 60px rgba(46, 35, 18, 0.08);
+}
+
+.hero-panel {
+  padding: clamp(28px, 7vw, 72px);
+  background:
+    radial-gradient(circle at top right, rgba(244, 178, 84, 0.28), transparent 42%),
+    linear-gradient(135deg, #ffffff 0%, #fff8ed 100%);
+}
+
+.eyebrow {
+  margin: 0 0 10px;
+  color: #a45f15;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+h1,
+h2,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  max-width: 760px;
+  margin-bottom: 18px;
+  font-size: clamp(2.4rem, 8vw, 5.8rem);
+  line-height: 0.96;
+  letter-spacing: -0.07em;
+}
+
+.hero-copy {
+  max-width: 700px;
+  margin-bottom: 0;
+  color: #586156;
+  font-size: clamp(1rem, 2.4vw, 1.2rem);
+}
+
+.toolbar {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  align-items: end;
+  margin: 18px 0;
+  padding: 16px;
+}
+
+.search-box {
+  display: grid;
+  gap: 8px;
+  color: #4f5c52;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.search-box input {
+  width: 100%;
+  border: 1px solid #d6cfbf;
+  border-radius: 16px;
+  padding: 14px 16px;
+  color: #17211b;
+  background: #fff;
+}
+
+.stats-card {
+  min-width: 154px;
+  border-radius: 18px;
+  padding: 14px 16px;
+  color: #fff;
+  background: #24442d;
+}
+
+.stats-card strong,
+.stats-card span {
+  display: block;
+}
+
+.stats-card strong {
+  font-size: 1.7rem;
+}
+
+.content-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 18px;
+  align-items: stretch;
+}
+
+.restaurant-map {
+  min-height: 640px;
+  overflow: hidden;
+  border: 1px solid rgba(42, 64, 48, 0.13);
+  border-radius: 24px;
+  background: #d9e4d8;
+  box-shadow: 0 20px 60px rgba(46, 35, 18, 0.08);
+}
+
+.restaurant-marker {
+  display: grid;
+  width: 32px !important;
+  height: 32px !important;
+  place-items: center;
+  border: 2px solid #fff;
+  border-radius: 999px;
+  background: #e57f1f;
+  box-shadow: 0 8px 18px rgba(69, 40, 13, 0.26);
+  font-size: 18px;
+}
+
+.restaurant-marker--selected {
+  background: #24442d;
+  transform: scale(1.14);
+}
+
+.list-panel {
+  max-height: 640px;
+  overflow: auto;
+  padding: 14px;
+}
+
+.selected-card {
+  margin-bottom: 14px;
+  padding: 18px;
+  background: #fffaf0;
+}
+
+.selected-card h2 {
+  margin-bottom: 8px;
+  font-size: 1.5rem;
+}
+
+.selected-card dl {
+  display: grid;
+  gap: 10px;
+  margin: 16px 0 0;
+}
+
+.selected-card dl div {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 8px;
+}
+
+.selected-card dt {
+  color: #7f7667;
+  font-weight: 800;
+}
+
+.selected-card dd {
+  margin: 0;
+}
+
+.restaurant-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.restaurant-list button {
+  display: grid;
+  width: 100%;
+  gap: 4px;
+  border: 1px solid #e4dece;
+  border-radius: 16px;
+  padding: 14px;
+  text-align: left;
+  color: #26342a;
+  background: #fff;
+}
+
+.restaurant-list button:hover,
+.restaurant-list button:focus-visible {
+  border-color: #d28a31;
+  outline: none;
+}
+
+.restaurant-list span {
+  color: #6f786f;
+  font-size: 0.9rem;
+}
+
+.status-card {
+  padding: 28px;
+}
+
+@media (max-width: 860px) {
+  .app-shell {
+    width: min(100% - 16px, 1180px);
+    padding-top: 8px;
+  }
+
+  .toolbar,
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .restaurant-map {
+    min-height: 56vh;
+  }
+
+  .list-panel {
+    max-height: none;
+  }
+}
