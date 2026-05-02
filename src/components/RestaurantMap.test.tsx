@@ -10,6 +10,7 @@ const leaflet = vi.hoisted(() => {
     on: ReturnType<typeof vi.fn>
     addTo: ReturnType<typeof vi.fn>
     openPopup: ReturnType<typeof vi.fn>
+    triggerClick: () => void
   }> = []
 
   return {
@@ -38,11 +39,16 @@ vi.mock('leaflet', () => ({
     })),
     latLngBounds: vi.fn((bounds: unknown) => bounds),
     marker: vi.fn(() => {
+      let clickHandler: (() => void) | null = null
       const marker = {
         bindPopup: vi.fn().mockReturnThis(),
-        on: vi.fn().mockReturnThis(),
+        on: vi.fn((eventName: string, handler: () => void) => {
+          if (eventName === 'click') clickHandler = handler
+          return marker
+        }),
         addTo: vi.fn().mockReturnThis(),
         openPopup: vi.fn().mockReturnThis(),
+        triggerClick: () => clickHandler?.(),
       }
       leaflet.markers.push(marker)
       return marker
@@ -77,6 +83,16 @@ describe('restaurant map popup', () => {
 
   it('renders only the escaped restaurant name for compact marker popups', () => {
     expect(restaurantPopupHtml(restaurant)).toBe('<strong>서울국밥 &lt;맛집&gt;</strong>')
+  })
+
+  it('opens the marker popup on the first marker click', () => {
+    const onSelect = vi.fn()
+    render(<RestaurantMap restaurants={[restaurant, otherRestaurant]} onSelect={onSelect} />)
+
+    leaflet.markers[0].triggerClick()
+
+    expect(onSelect).toHaveBeenCalledWith(restaurant)
+    expect(leaflet.markers[0].openPopup).toHaveBeenCalledOnce()
   })
 
   it('opens the selected marker popup after React redraws markers', () => {

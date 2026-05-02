@@ -65,7 +65,10 @@ export function RestaurantMap({ restaurants, selectedId, onSelect }: RestaurantM
       })
 
       marker.bindPopup(restaurantPopupHtml(restaurant))
-      marker.on('click', () => onSelect(restaurant))
+      marker.on('click', () => {
+        onSelect(restaurant)
+        marker.openPopup()
+      })
       marker.addTo(markerLayer)
 
       if (isSelected) {
