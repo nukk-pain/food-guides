@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App'
 
 vi.mock('./components/RestaurantMap', () => ({
-  RestaurantMap: ({ restaurants }: { restaurants: unknown[] }) => <div data-testid="restaurant-map">지도 {restaurants.length}곳</div>,
+  RestaurantMap: ({ restaurants }: { restaurants: unknown[] }) => <div data-testid="restaurant-map">지도 {restaurants.length}개</div>,
 }))
 
 const sampleRestaurants = [
@@ -51,23 +51,28 @@ describe('App UX flow', () => {
   it('starts with a search-friendly landing screen and a nationwide map action', async () => {
     render(<App />)
 
-    expect(await screen.findByRole('heading', { name: '백년가게 식당 찾기' })).toBeTruthy()
-    expect(screen.getByRole('button', { name: /전국 2곳 지도 보기/ })).toBeTruthy()
-    expect(screen.getByRole('searchbox', { name: /지역·상호·주소 검색/ })).toBeTruthy()
+    expect(await screen.findByRole('heading', { name: '백년가게 식당 지도' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: /전국 2개 식당/ })).toBeTruthy()
+    expect(screen.getByRole('searchbox', { name: /검색/ })).toBeTruthy()
+    expect(document.body.textContent).not.toContain('지도와 목록으로 찾기')
+    expect(document.body.textContent).not.toContain('인증된 오래된 식당')
+    expect(document.body.textContent).not.toContain('곳')
   })
 
   it('lets users search before choosing a region and open the matching area', async () => {
     render(<App />)
 
-    const searchBox = await screen.findByRole('searchbox', { name: /지역·상호·주소 검색/ })
+    const searchBox = await screen.findByRole('searchbox', { name: /검색/ })
     fireEvent.change(searchBox, { target: { value: '서울' } })
 
     expect(screen.getByText('서울국밥')).toBeTruthy()
     expect(screen.queryByText('고령금산한우')).toBeNull()
 
-    fireEvent.click(screen.getByRole('button', { name: /전국 1곳 지도 보기/ }))
+    fireEvent.click(screen.getByRole('button', { name: /전국 1개 식당/ }))
 
-    expect((await screen.findByTestId('restaurant-map')).textContent).toBe('지도 1곳')
+    expect((await screen.findByTestId('restaurant-map')).textContent).toBe('지도 1개')
+    expect(screen.getAllByText('서울 종로구').length).toBeGreaterThan(0)
+    expect(document.body.textContent).not.toContain('곳')
     await waitFor(() => expect(screen.getByRole('link', { name: '전화하기' }).getAttribute('href')).toBe('tel:021234567'))
   })
 })

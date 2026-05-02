@@ -1,4 +1,5 @@
 import type { RawRestaurant, Restaurant } from '../domain/restaurants'
+import { normalizeMetropolitanAddress } from '../domain/restaurants'
 
 export const SBIZ_LIST_URL = 'https://www.sbiz.or.kr/hdst/main/ohndMarketList.do'
 export const SBIZ_DETAIL_URL = 'https://www.sbiz.or.kr/hdst/main/ohndMarketDetail.do'
@@ -59,14 +60,15 @@ export function toPublicRestaurantRows(rows: SbizListRow[], geocodeCache: Geocod
   return rows.flatMap((row) => {
     const point = geocodeCache[row.address]
     if (!point) return []
+    const address = normalizeMetropolitanAddress(row.address)
 
     return [
       {
         id: row.id,
         name: row.name,
         category: row.category,
-        region: extractRegion(row.address),
-        address: row.address,
+        region: extractRegion(address),
+        address,
         lat: point.lat,
         lng: point.lng,
         ...(row.phone ? { phone: row.phone } : {}),
@@ -77,15 +79,19 @@ export function toPublicRestaurantRows(rows: SbizListRow[], geocodeCache: Geocod
 }
 
 export function toRawRestaurantRows(rows: SbizListRow[]): RawRestaurant[] {
-  return rows.map((row) => ({
-    id: row.id,
-    name: row.name,
-    category: row.category,
-    region: extractRegion(row.address),
-    address: row.address,
-    ...(row.phone ? { phone: row.phone } : {}),
-    sourceUrl: row.sourceUrl,
-  }))
+  return rows.map((row) => {
+    const address = normalizeMetropolitanAddress(row.address)
+
+    return {
+      id: row.id,
+      name: row.name,
+      category: row.category,
+      region: extractRegion(address),
+      address,
+      ...(row.phone ? { phone: row.phone } : {}),
+      sourceUrl: row.sourceUrl,
+    }
+  })
 }
 
 export function geocodeQueryVariants(address: string): string[] {

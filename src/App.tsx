@@ -109,9 +109,8 @@ function App() {
   return (
     <main className="app-shell">
       <section className="hero-panel" aria-labelledby="page-title">
-        <p className="eyebrow">전국 {restaurants.length.toLocaleString('ko-KR')}곳 · 지도와 목록으로 찾기</p>
-        <h1 id="page-title">백년가게 식당 찾기</h1>
-        <p className="hero-copy">지역, 상호, 주소를 검색하고 인증된 오래된 식당을 지도에서 바로 확인하세요.</p>
+        <p className="eyebrow">전국 {restaurants.length.toLocaleString('ko-KR')}개 식당</p>
+        <h1 id="page-title">백년가게 식당 지도</h1>
       </section>
 
       {loadState === 'loading' && <StatusCard title="데이터를 불러오는 중입니다" description="정적 JSON 파일을 읽고 있어요." />}
@@ -145,14 +144,14 @@ function App() {
             </div>
           </div>
           <aside className="list-panel" aria-label="백년가게 식당 목록과 검색">
-            <section className="toolbar" aria-label="식당 검색">
+            <section className="toolbar" aria-label="검색">
               <div className="selected-area-row">
                 <span>{selectedAreaLabel}</span>
                 <button type="button" onClick={handleChangeArea}>
-                  지역 변경
+                  지역
                 </button>
               </div>
-              <SearchBox value={query} onChange={setQuery} label="상호·주소 검색" placeholder="예: 국밥, 한식, 도로명" />
+              <SearchBox value={query} onChange={setQuery} label="검색" placeholder="상호·주소" />
             </section>
             {selectedRestaurant && (
               <SelectedRestaurantCard
@@ -210,20 +209,18 @@ function RegionPicker({
   return (
     <section className="region-panel" aria-labelledby="region-title">
       <div className="region-heading">
-        <p className="eyebrow">지역 먼저 선택하거나 바로 검색</p>
-        <h2 id="region-title">어디의 백년가게 식당을 볼까요?</h2>
-        <p>전국 지도로 바로 시작하거나, 시·도와 시·군·구를 좁혀서 볼 수 있습니다.</p>
+        <h2 id="region-title">지역 선택</h2>
       </div>
 
       <div className="landing-search-card">
         <SearchBox
           value={query}
           onChange={onQueryChange}
-          label="지역·상호·주소 검색"
-          placeholder="예: 서울, 강릉, 국밥, 한식"
+          label="검색"
+          placeholder="상호·주소"
         />
         <button className="primary-action" type="button" onClick={onAllSelect}>
-          전국 {allCount.toLocaleString('ko-KR')}곳 지도 보기
+          전국 {allCount.toLocaleString('ko-KR')}개 식당
         </button>
       </div>
 
@@ -247,7 +244,7 @@ function RegionPicker({
             onClick={() => onProvinceSelect(option.province)}
           >
             <strong>{option.province}</strong>
-            <span>{option.count.toLocaleString('ko-KR')}곳</span>
+            <span>{option.count.toLocaleString('ko-KR')}개</span>
           </button>
         ))}
       </div>
@@ -255,7 +252,7 @@ function RegionPicker({
       {activeProvinceOption ? (
         <div className="county-panel" aria-label={`${activeProvinceOption.province} 시군구 선택`}>
           <button className="county-button county-button--primary" type="button" onClick={() => onAreaSelect({ province: activeProvinceOption.province })}>
-            {activeProvinceOption.province} 전체 지도 보기
+            {activeProvinceOption.province} 전체
           </button>
           <div className="county-grid">
             {activeProvinceOption.counties.map((option) => (
@@ -266,13 +263,13 @@ function RegionPicker({
                 onClick={() => onAreaSelect({ province: activeProvinceOption.province, county: option.county })}
               >
                 <strong>{option.county}</strong>
-                <span>{option.count.toLocaleString('ko-KR')}곳</span>
+                <span>{option.count.toLocaleString('ko-KR')}개</span>
               </button>
             ))}
           </div>
         </div>
       ) : (
-        <p className="region-hint">시·도를 선택하면 시·군·구 목록이 나타납니다.</p>
+        <p className="region-hint">시·도 선택</p>
       )}
     </section>
   )
@@ -312,9 +309,8 @@ function SelectedRestaurantCard({
 
   return (
     <article className="selected-card">
-      <p className="eyebrow">선택한 식당</p>
       <h2>{restaurant.name}</h2>
-      <p>{restaurant.address}</p>
+      <p className="address-text">{restaurant.address}</p>
       <div className="action-row" aria-label="식당 바로가기">
         {phoneHref && (
           <a className="action-button action-button--primary" href={phoneHref}>
@@ -341,22 +337,6 @@ function SelectedRestaurantCard({
           </a>
         )}
       </div>
-      <dl>
-        <div>
-          <dt>업종</dt>
-          <dd>{restaurant.category}</dd>
-        </div>
-        <div>
-          <dt>지역</dt>
-          <dd>{restaurant.region}</dd>
-        </div>
-        {restaurant.phone && (
-          <div>
-            <dt>전화</dt>
-            <dd>{restaurant.phone}</dd>
-          </div>
-        )}
-      </dl>
     </article>
   )
 }
@@ -374,7 +354,7 @@ function RestaurantListItem({
     <li>
       <button className={selected ? 'restaurant-list-button restaurant-list-button--selected' : 'restaurant-list-button'} type="button" onClick={() => onSelect(restaurant)}>
         <strong>{restaurant.name}</strong>
-        <span>{restaurant.region} · {restaurant.category}</span>
+        <span>{restaurant.region}</span>
         <small>{restaurant.address}</small>
       </button>
     </li>

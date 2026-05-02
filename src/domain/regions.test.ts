@@ -12,6 +12,8 @@ const rows: Restaurant[] = [
 describe('region helpers', () => {
   it('normalizes source addresses into SBIZ-style province labels', () => {
     expect(getProvinceLabel('서울특별시 종로구 세종대로 1')).toBe('서울')
+    expect(getProvinceLabel('서울시 중랑구 공릉로 46, 1층(묵동)')).toBe('서울')
+    expect(getProvinceLabel('대구시 동구 신암남로 133. 1,2층')).toBe('대구')
     expect(getProvinceLabel('경기도 군포시 번영로 1')).toBe('경기')
     expect(getProvinceLabel('세종특별자치시 조치원읍 새내로 1')).toBe('세종')
   })

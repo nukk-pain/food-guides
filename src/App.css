@@ -357,6 +357,11 @@ h1 {
   color: var(--color-muted);
 }
 
+.address-text {
+  margin-bottom: 0;
+  font-size: 0.92rem;
+}
+
 .action-row,
 .map-link-row {
   display: flex;

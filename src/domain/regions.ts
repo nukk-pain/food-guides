@@ -18,8 +18,10 @@ export type ProvinceOption = {
 
 const PROVINCE_LABELS: Record<string, string> = {
   서울특별시: '서울',
+  서울시: '서울',
   부산광역시: '부산',
   대구광역시: '대구',
+  대구시: '대구',
   인천광역시: '인천',
   광주광역시: '광주',
   대전광역시: '대전',

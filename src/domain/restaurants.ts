@@ -17,6 +17,15 @@ export type RawRestaurant = Partial<Omit<Restaurant, 'lat' | 'lng'>> & {
 
 const RESTAURANT_CATEGORY_KEYWORDS = ['음식점업', '식당', '한식', '중식', '일식', '양식', '분식', '카페']
 
+const OFFICIAL_CITY_PREFIXES: Record<string, string> = {
+  서울시: '서울특별시',
+  대구시: '대구광역시',
+}
+
+export function normalizeMetropolitanAddress(value: string): string {
+  return value.replace(/^(서울시|대구시)(?=\s)/, (city) => OFFICIAL_CITY_PREFIXES[city] ?? city)
+}
+
 export function normalizeRestaurant(row: RawRestaurant): Restaurant | null {
   const lat = Number(row.lat)
   const lng = Number(row.lng)
@@ -29,12 +38,15 @@ export function normalizeRestaurant(row: RawRestaurant): Restaurant | null {
     return null
   }
 
+  const region = normalizeMetropolitanAddress(row.region)
+  const address = normalizeMetropolitanAddress(row.address)
+
   return {
     id: row.id,
     name: row.name,
     category: row.category,
-    region: row.region,
-    address: row.address,
+    region,
+    address,
     lat,
     lng,
     ...(row.phone ? { phone: row.phone } : {}),

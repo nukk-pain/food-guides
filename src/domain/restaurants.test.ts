@@ -58,5 +58,38 @@ describe('restaurant domain helpers', () => {
       phone: '051-000-0000',
       sourceUrl: 'https://www.sbiz.or.kr/hdst/main/ohndMarketList.do',
     })
+
+  })
+
+  it('normalizes city-name aliases to official metropolitan addresses', () => {
+    expect(
+      normalizeRestaurant({
+        id: 'HND003136',
+        name: '청평매운탕',
+        category: '음식점업',
+        region: '서울시 중랑구',
+        address: '서울시 중랑구 공릉로 46, 1층(묵동)',
+        lat: 37.613,
+        lng: 127.078,
+      }),
+    ).toMatchObject({
+      region: '서울특별시 중랑구',
+      address: '서울특별시 중랑구 공릉로 46, 1층(묵동)',
+    })
+
+    expect(
+      normalizeRestaurant({
+        id: '20240060806',
+        name: '해금강',
+        category: '음식점업',
+        region: '대구시 동구',
+        address: '대구시 동구 신암남로 133. 1,2층',
+        lat: 35.88,
+        lng: 128.62,
+      }),
+    ).toMatchObject({
+      region: '대구광역시 동구',
+      address: '대구광역시 동구 신암남로 133. 1,2층',
+    })
   })
 })
