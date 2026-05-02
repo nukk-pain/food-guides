@@ -122,6 +122,7 @@ function App() {
       <section className="hero-panel" aria-labelledby="page-title">
         <p className="eyebrow">전국 {restaurants.length.toLocaleString('ko-KR')}개 식당</p>
         <h1 id="page-title">백년가게 식당 지도</h1>
+        <p className="hero-description">전국 백년가게 식당을 검색하고 지도에서 확인하세요.</p>
       </section>
 
       {loadState === 'loading' && <StatusCard title="데이터를 불러오는 중입니다" description="정적 JSON 파일을 읽고 있어요." />}
@@ -163,7 +164,17 @@ function App() {
           )}
         </section>
       )}
+
+      {loadState === 'ready' && <DataNotice count={restaurants.length} />}
     </main>
+  )
+}
+
+function DataNotice({ count }: { count: number }) {
+  return (
+    <footer className="data-notice" aria-label="데이터 출처">
+      데이터: 소상공인시장진흥공단 백년가게 정보 기반 · 수록: 전국 음식점 {count.toLocaleString('ko-KR')}개
+    </footer>
   )
 }
 

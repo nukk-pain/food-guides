@@ -60,6 +60,8 @@ describe('App UX flow', () => {
     render(<App />)
 
     expect(await screen.findByRole('heading', { name: '백년가게 식당 지도' })).toBeTruthy()
+    expect(screen.getByText('전국 백년가게 식당을 검색하고 지도에서 확인하세요.')).toBeTruthy()
+    expect(screen.getByText('데이터: 소상공인시장진흥공단 백년가게 정보 기반 · 수록: 전국 음식점 2개')).toBeTruthy()
     expect(screen.getByRole('button', { name: /전체 지도.*2개/ })).toBeTruthy()
     expect(screen.getByRole('searchbox', { name: /검색/ })).toBeTruthy()
     expect(document.body.textContent).not.toContain('지역 선택')
