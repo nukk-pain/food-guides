@@ -2,18 +2,21 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import './App.css'
 import { RestaurantMap } from './components/RestaurantMap'
 import { restaurantsDataUrl } from './data/restaurantsData'
+import { copyableAddressText, buildMapLinks, normalizePhoneHref, safeSbizDetailUrl } from './domain/mapLinks'
 import { filterRestaurantStores, type RawRestaurant, type Restaurant } from './domain/restaurants'
 import { filterByArea, getAreaOptions, type AreaSelection, type ProvinceOption } from './domain/regions'
 
 type LoadState = 'loading' | 'ready' | 'empty' | 'error'
+type MapScope = 'all' | AreaSelection | null
 
 function App() {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([])
   const [loadState, setLoadState] = useState<LoadState>('loading')
   const [query, setQuery] = useState('')
-  const [areaSelection, setAreaSelection] = useState<AreaSelection | null>(null)
+  const [mapScope, setMapScope] = useState<MapScope>(null)
   const [activeProvince, setActiveProvince] = useState<string | null>(null)
   const [selectedRestaurantId, setSelectedRestaurantId] = useState<string | null>(null)
+  const [copiedRestaurantId, setCopiedRestaurantId] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -47,19 +50,14 @@ function App() {
     [activeProvince, areaOptions],
   )
 
-  const areaRestaurants = useMemo(() => filterByArea(restaurants, areaSelection), [areaSelection, restaurants])
+  const searchFilteredRestaurants = useMemo(() => searchRestaurants(restaurants, query), [query, restaurants])
 
-  const filteredRestaurants = useMemo(() => {
-    const normalizedQuery = query.trim().toLocaleLowerCase('ko-KR')
-    if (!normalizedQuery) return areaRestaurants
+  const scopedRestaurants = useMemo(() => {
+    if (mapScope === 'all') return restaurants
+    return filterByArea(restaurants, mapScope)
+  }, [mapScope, restaurants])
 
-    return areaRestaurants.filter((restaurant) => {
-      const haystack = [restaurant.name, restaurant.region, restaurant.address, restaurant.category]
-        .join(' ')
-        .toLocaleLowerCase('ko-KR')
-      return haystack.includes(normalizedQuery)
-    })
-  }, [query, areaRestaurants])
+  const filteredRestaurants = useMemo(() => searchRestaurants(scopedRestaurants, query), [query, scopedRestaurants])
 
   const selectedRestaurant = useMemo(
     () => filteredRestaurants.find((restaurant) => restaurant.id === selectedRestaurantId) ?? filteredRestaurants[0] ?? null,
@@ -75,31 +73,45 @@ function App() {
   }, [])
 
   const handleAreaSelect = useCallback((selection: AreaSelection) => {
-    setAreaSelection(selection)
+    setMapScope(selection)
     setActiveProvince(selection.province)
     setSelectedRestaurantId(null)
-    setQuery('')
+  }, [])
+
+  const handleAllSelect = useCallback(() => {
+    setMapScope('all')
+    setSelectedRestaurantId(null)
   }, [])
 
   const handleChangeArea = useCallback(() => {
-    setAreaSelection(null)
+    setMapScope(null)
     setSelectedRestaurantId(null)
-    setQuery('')
-    setActiveProvince(areaSelection?.province ?? activeProvince)
-  }, [activeProvince, areaSelection])
+    setActiveProvince(mapScope && mapScope !== 'all' ? mapScope.province : activeProvince)
+  }, [activeProvince, mapScope])
 
-  const selectedAreaLabel = areaSelection
-    ? `${areaSelection.province}${areaSelection.county ? ` ${areaSelection.county}` : ' 전체'}`
-    : ''
+  const handleCopyAddress = useCallback(async (restaurant: Restaurant) => {
+    const writeText = navigator.clipboard?.writeText
+    if (typeof writeText !== 'function') {
+      setCopiedRestaurantId(null)
+      return
+    }
+
+    try {
+      await writeText.call(navigator.clipboard, copyableAddressText(restaurant))
+      setCopiedRestaurantId(restaurant.id)
+    } catch {
+      setCopiedRestaurantId(null)
+    }
+  }, [])
+
+  const selectedAreaLabel = getScopeLabel(mapScope, query)
 
   return (
     <main className="app-shell">
       <section className="hero-panel" aria-labelledby="page-title">
-        <p className="eyebrow">0원 운영을 목표로 하는 정적 지도 서비스</p>
-        <h1 id="page-title">백년가게 식당 지도</h1>
-        <p className="hero-copy">
-          소상공인시장진흥공단 백년가게 목록에서 음식점업만 추려, 먼저 지역을 고른 뒤 지도에서 빠르게 찾는 서비스입니다.
-        </p>
+        <p className="eyebrow">전국 {restaurants.length.toLocaleString('ko-KR')}곳 · 지도와 목록으로 찾기</p>
+        <h1 id="page-title">백년가게 식당 찾기</h1>
+        <p className="hero-copy">지역, 상호, 주소를 검색하고 인증된 오래된 식당을 지도에서 바로 확인하세요.</p>
       </section>
 
       {loadState === 'loading' && <StatusCard title="데이터를 불러오는 중입니다" description="정적 JSON 파일을 읽고 있어요." />}
@@ -108,17 +120,22 @@ function App() {
       )}
       {loadState === 'empty' && <StatusCard title="표시할 식당이 없습니다" description="음식점업과 좌표가 있는 데이터가 필요합니다." />}
 
-      {loadState === 'ready' && !areaSelection && (
+      {loadState === 'ready' && !mapScope && (
         <RegionPicker
+          allCount={searchFilteredRestaurants.length}
           areaOptions={areaOptions}
           activeProvince={activeProvince}
           activeProvinceOption={activeProvinceOption}
+          query={query}
+          searchResults={searchFilteredRestaurants}
+          onQueryChange={setQuery}
           onProvinceSelect={handleProvinceSelect}
           onAreaSelect={handleAreaSelect}
+          onAllSelect={handleAllSelect}
         />
       )}
 
-      {loadState === 'ready' && areaSelection && (
+      {loadState === 'ready' && mapScope && (
         <section className="content-grid" aria-label="백년가게 식당 지도와 목록">
           <div className="map-panel">
             <RestaurantMap restaurants={filteredRestaurants} selectedId={selectedRestaurant?.id} onSelect={handleSelect} />
@@ -135,50 +152,26 @@ function App() {
                   지역 변경
                 </button>
               </div>
-              <label className="search-box">
-                <span>상호·주소 검색</span>
-                <input
-                  value={query}
-                  onChange={(event) => setQuery(event.target.value)}
-                  placeholder="예: 국밥, 한식, 도로명"
-                  type="search"
-                />
-              </label>
+              <SearchBox value={query} onChange={setQuery} label="상호·주소 검색" placeholder="예: 국밥, 한식, 도로명" />
             </section>
             {selectedRestaurant && (
-              <article className="selected-card">
-                <p className="eyebrow">선택한 식당</p>
-                <h2>{selectedRestaurant.name}</h2>
-                <p>{selectedRestaurant.address}</p>
-                <dl>
-                  <div>
-                    <dt>업종</dt>
-                    <dd>{selectedRestaurant.category}</dd>
-                  </div>
-                  <div>
-                    <dt>지역</dt>
-                    <dd>{selectedRestaurant.region}</dd>
-                  </div>
-                  {selectedRestaurant.phone && (
-                    <div>
-                      <dt>전화</dt>
-                      <dd>{selectedRestaurant.phone}</dd>
-                    </div>
-                  )}
-                </dl>
-              </article>
+              <SelectedRestaurantCard
+                copied={copiedRestaurantId === selectedRestaurant.id}
+                restaurant={selectedRestaurant}
+                onCopyAddress={handleCopyAddress}
+              />
             )}
             {filteredRestaurants.length === 0 ? (
               <p className="empty-list">검색 결과가 없습니다. 검색어를 줄이거나 지역을 다시 선택해보세요.</p>
             ) : (
               <ul className="restaurant-list">
                 {filteredRestaurants.map((restaurant) => (
-                  <li key={restaurant.id}>
-                    <button type="button" onClick={() => handleSelect(restaurant)}>
-                      <strong>{restaurant.name}</strong>
-                      <span>{restaurant.region}</span>
-                    </button>
-                  </li>
+                  <RestaurantListItem
+                    key={restaurant.id}
+                    restaurant={restaurant}
+                    selected={restaurant.id === selectedRestaurant?.id}
+                    onSelect={handleSelect}
+                  />
                 ))}
               </ul>
             )}
@@ -190,25 +183,60 @@ function App() {
 }
 
 function RegionPicker({
+  allCount,
   areaOptions,
   activeProvince,
   activeProvinceOption,
+  query,
+  searchResults,
+  onQueryChange,
   onProvinceSelect,
   onAreaSelect,
+  onAllSelect,
 }: {
+  allCount: number
   areaOptions: ProvinceOption[]
   activeProvince: string | null
   activeProvinceOption: ProvinceOption | null
+  query: string
+  searchResults: Restaurant[]
+  onQueryChange: (query: string) => void
   onProvinceSelect: (province: string) => void
   onAreaSelect: (selection: AreaSelection) => void
+  onAllSelect: () => void
 }) {
+  const previewResults = query.trim() ? searchResults.slice(0, 6) : []
+
   return (
     <section className="region-panel" aria-labelledby="region-title">
       <div className="region-heading">
-        <p className="eyebrow">지역 먼저 선택</p>
-        <h2 id="region-title">어느 지역의 백년가게 식당을 볼까요?</h2>
-        <p>SBIZ 화면처럼 시·도를 먼저 고르고, 필요하면 시·군·구까지 좁힌 뒤 지도를 엽니다.</p>
+        <p className="eyebrow">지역 먼저 선택하거나 바로 검색</p>
+        <h2 id="region-title">어디의 백년가게 식당을 볼까요?</h2>
+        <p>전국 지도로 바로 시작하거나, 시·도와 시·군·구를 좁혀서 볼 수 있습니다.</p>
       </div>
+
+      <div className="landing-search-card">
+        <SearchBox
+          value={query}
+          onChange={onQueryChange}
+          label="지역·상호·주소 검색"
+          placeholder="예: 서울, 강릉, 국밥, 한식"
+        />
+        <button className="primary-action" type="button" onClick={onAllSelect}>
+          전국 {allCount.toLocaleString('ko-KR')}곳 지도 보기
+        </button>
+      </div>
+
+      {previewResults.length > 0 && (
+        <div className="search-preview" aria-label="검색 미리보기">
+          {previewResults.map((restaurant) => (
+            <button key={restaurant.id} type="button" onClick={onAllSelect}>
+              <strong>{restaurant.name}</strong>
+              <span>{restaurant.region}</span>
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="province-grid" aria-label="시도 선택">
         {areaOptions.map((option) => (
@@ -250,6 +278,109 @@ function RegionPicker({
   )
 }
 
+function SearchBox({
+  value,
+  label,
+  placeholder,
+  onChange,
+}: {
+  value: string
+  label: string
+  placeholder: string
+  onChange: (value: string) => void
+}) {
+  return (
+    <label className="search-box">
+      <span>{label}</span>
+      <input value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} type="search" />
+    </label>
+  )
+}
+
+function SelectedRestaurantCard({
+  copied,
+  restaurant,
+  onCopyAddress,
+}: {
+  copied: boolean
+  restaurant: Restaurant
+  onCopyAddress: (restaurant: Restaurant) => Promise<void>
+}) {
+  const phoneHref = normalizePhoneHref(restaurant.phone)
+  const mapLinks = buildMapLinks(restaurant)
+  const sourceUrl = safeSbizDetailUrl(restaurant.sourceUrl)
+
+  return (
+    <article className="selected-card">
+      <p className="eyebrow">선택한 식당</p>
+      <h2>{restaurant.name}</h2>
+      <p>{restaurant.address}</p>
+      <div className="action-row" aria-label="식당 바로가기">
+        {phoneHref && (
+          <a className="action-button action-button--primary" href={phoneHref}>
+            전화하기
+          </a>
+        )}
+        <button className="action-button" type="button" onClick={() => void onCopyAddress(restaurant)}>
+          {copied ? '복사 완료' : '주소 복사'}
+        </button>
+      </div>
+      <div className="map-link-row" aria-label="외부 지도에서 보기">
+        <a href={mapLinks.naver} target="_blank" rel="noreferrer">
+          네이버지도
+        </a>
+        <a href={mapLinks.kakao} target="_blank" rel="noreferrer">
+          카카오맵
+        </a>
+        <a href={mapLinks.google} target="_blank" rel="noreferrer">
+          구글맵
+        </a>
+        {sourceUrl && (
+          <a href={sourceUrl} target="_blank" rel="noreferrer">
+            원문
+          </a>
+        )}
+      </div>
+      <dl>
+        <div>
+          <dt>업종</dt>
+          <dd>{restaurant.category}</dd>
+        </div>
+        <div>
+          <dt>지역</dt>
+          <dd>{restaurant.region}</dd>
+        </div>
+        {restaurant.phone && (
+          <div>
+            <dt>전화</dt>
+            <dd>{restaurant.phone}</dd>
+          </div>
+        )}
+      </dl>
+    </article>
+  )
+}
+
+function RestaurantListItem({
+  restaurant,
+  selected,
+  onSelect,
+}: {
+  restaurant: Restaurant
+  selected: boolean
+  onSelect: (restaurant: Restaurant) => void
+}) {
+  return (
+    <li>
+      <button className={selected ? 'restaurant-list-button restaurant-list-button--selected' : 'restaurant-list-button'} type="button" onClick={() => onSelect(restaurant)}>
+        <strong>{restaurant.name}</strong>
+        <span>{restaurant.region} · {restaurant.category}</span>
+        <small>{restaurant.address}</small>
+      </button>
+    </li>
+  )
+}
+
 function StatusCard({ title, description }: { title: string; description: string }) {
   return (
     <section className="status-card" role="status">
@@ -257,6 +388,24 @@ function StatusCard({ title, description }: { title: string; description: string
       <p>{description}</p>
     </section>
   )
+}
+
+function searchRestaurants(restaurants: Restaurant[], query: string): Restaurant[] {
+  const normalizedQuery = query.trim().toLocaleLowerCase('ko-KR')
+  if (!normalizedQuery) return restaurants
+
+  return restaurants.filter((restaurant) => {
+    const haystack = [restaurant.name, restaurant.region, restaurant.address, restaurant.category]
+      .join(' ')
+      .toLocaleLowerCase('ko-KR')
+    return haystack.includes(normalizedQuery)
+  })
+}
+
+function getScopeLabel(scope: MapScope, query: string): string {
+  if (scope === 'all') return query.trim() ? '전국 검색 결과' : '전국'
+  if (!scope) return ''
+  return `${scope.province}${scope.county ? ` ${scope.county}` : ' 전체'}`
 }
 
 export default App
