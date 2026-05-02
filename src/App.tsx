@@ -120,8 +120,16 @@ function App() {
   return (
     <main className="app-shell">
       <section className="hero-panel" aria-labelledby="page-title">
-        <p className="eyebrow">전국 {restaurants.length.toLocaleString('ko-KR')}개 식당</p>
-        <h1 id="page-title">백년가게 식당 지도</h1>
+        <div className="hero-copy-block">
+          <p className="eyebrow">전국 {restaurants.length.toLocaleString('ko-KR')}개 식당</p>
+          <h1 id="page-title">백년가게 식당 지도</h1>
+          <p className="hero-copy">상호명이나 주소로 검색하고, 지역을 고르면 바로 지도로 확인할 수 있어요.</p>
+        </div>
+        <div className="hero-map-card" aria-hidden="true">
+          <span className="hero-map-pin">🍽️</span>
+          <strong>지역별 노포 탐색</strong>
+          <span>검색 → 지역 선택 → 지도 팝업</span>
+        </div>
       </section>
 
       {loadState === 'loading' && <StatusCard title="데이터를 불러오는 중입니다" description="정적 JSON 파일을 읽고 있어요." />}
@@ -195,11 +203,13 @@ function RegionPicker({
   onAllSelect: () => void
 }) {
   const previewResults = query.trim() ? searchResults.slice(0, 6) : []
+  const primaryMapActionLabel = query.trim() ? '검색 결과 지도 보기' : '전체 식당 지도 보기'
 
   return (
     <section className="region-panel" aria-labelledby="region-title">
       <div className="region-heading">
         <h2 id="region-title">지역 선택</h2>
+        <p>검색으로 바로 찾거나 시·도와 시·군·구를 골라 지도를 열어보세요.</p>
       </div>
 
       <div className="landing-search-card">
@@ -210,7 +220,7 @@ function RegionPicker({
           placeholder="상호·주소"
         />
         <button className="primary-action" type="button" onClick={onAllSelect}>
-          전국 {allCount.toLocaleString('ko-KR')}개 식당
+          {primaryMapActionLabel} · {allCount.toLocaleString('ko-KR')}개
         </button>
       </div>
 
@@ -249,7 +259,7 @@ function RegionPicker({
           </select>
         </label>
         <button className="primary-action" type="button" disabled={!activeProvince} onClick={onAreaOpen}>
-          지도
+          선택 지역 지도 보기
         </button>
       </div>
     </section>
