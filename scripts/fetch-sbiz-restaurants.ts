@@ -13,8 +13,9 @@ import {
   SBIZ_LIST_URL,
 } from '../src/sbiz/parser'
 import { geocodeRoadAddressWithJuso } from '../src/sbiz/jusoGeocoder'
+import { geocodeAddressWithKakao } from '../src/sbiz/kakaoGeocoder'
 
-type GeocodeProvider = 'nominatim' | 'juso'
+type GeocodeProvider = 'nominatim' | 'juso' | 'kakao'
 
 type CliOptions = {
   maxPages?: number
@@ -99,10 +100,11 @@ async function geocodeMissingAddresses(rows: SbizListRow[], cache: GeocodeCache,
   const missingAddresses = [...new Set(rows.map((row) => row.address).filter((address) => !cache[address]))]
   const limit = options.geocodeLimit ?? missingAddresses.length
   const jusoConfirmationKey = resolveJusoConfirmationKey(options)
+  const kakaoRestApiKey = resolveKakaoRestApiKey(options)
 
   for (const [index, address] of missingAddresses.slice(0, limit).entries()) {
     await delay(options.geocodeProvider === 'nominatim' ? Math.max(options.delayMs, 1100) : options.delayMs)
-    const point = await geocodeAddress(address, options, jusoConfirmationKey)
+    const point = await geocodeAddress(address, options, jusoConfirmationKey, kakaoRestApiKey)
     if (point) {
       cache[address] = point
       await writeJson(GEOCODE_CACHE_PATH, cache)
@@ -113,11 +115,26 @@ async function geocodeMissingAddresses(rows: SbizListRow[], cache: GeocodeCache,
   }
 }
 
-async function geocodeAddress(address: string, options: CliOptions, jusoConfirmationKey?: string): Promise<GeocodePoint | null> {
+async function geocodeAddress(
+  address: string,
+  options: CliOptions,
+  jusoConfirmationKey?: string,
+  kakaoRestApiKey?: string,
+): Promise<GeocodePoint | null> {
   if (options.geocodeProvider === 'juso') {
     if (!jusoConfirmationKey) throw new Error('JUSO_CONFIRM_KEY is required when --geocode-provider=juso')
     for (const query of geocodeQueryVariants(address)) {
       const point = await geocodeRoadAddressWithJuso(query, jusoConfirmationKey)
+      if (point) return point
+      await delay(options.delayMs)
+    }
+    return null
+  }
+
+  if (options.geocodeProvider === 'kakao') {
+    if (!kakaoRestApiKey) throw new Error('KAKAO_REST_API_KEY is required when --geocode-provider=kakao')
+    for (const query of geocodeQueryVariants(address)) {
+      const point = await geocodeAddressWithKakao(query, kakaoRestApiKey)
       if (point) return point
       await delay(options.delayMs)
     }
@@ -168,7 +185,7 @@ function parseArgs(args: string[]): CliOptions {
     if (arg.startsWith('--delay-ms=')) options.delayMs = Number(arg.replace('--delay-ms=', ''))
     if (arg.startsWith('--geocode-provider=')) {
       const provider = arg.replace('--geocode-provider=', '')
-      if (provider !== 'nominatim' && provider !== 'juso') {
+      if (provider !== 'nominatim' && provider !== 'juso' && provider !== 'kakao') {
         throw new Error(`Unsupported geocode provider: ${provider}`)
       }
       options.geocodeProvider = provider
@@ -181,6 +198,11 @@ function parseArgs(args: string[]): CliOptions {
 function resolveJusoConfirmationKey(options: CliOptions): string | undefined {
   if (options.geocodeProvider !== 'juso') return undefined
   return process.env.JUSO_CONFIRM_KEY ?? process.env.JUSO_API_KEY
+}
+
+function resolveKakaoRestApiKey(options: CliOptions): string | undefined {
+  if (options.geocodeProvider !== 'kakao') return undefined
+  return process.env.KAKAO_REST_API_KEY
 }
 
 async function readGeocodeCache(): Promise<GeocodeCache> {

@@ -29,13 +29,21 @@ npm run fetch:data
 npm run fetch:data -- --geocode --geocode-limit=50
 ```
 
-목록 + 공공 도로명주소 좌표 변환 실행(권장, 로컬 배치용):
+목록 + 카카오 주소 좌표 변환 실행(권장, 로컬 1회 배치용):
+
+```bash
+KAKAO_REST_API_KEY=발급받은_REST_API_키 npm run fetch:data -- --geocode --geocode-provider=kakao --geocode-limit=905 --delay-ms=100
+```
+
+카카오 앱에서 `OPEN_MAP_AND_LOCAL service`가 비활성화되어 있으면 403 오류가 납니다. Kakao Developers의 해당 앱에서 카카오맵/로컬 API 제품을 활성화한 뒤 다시 실행합니다.
+
+목록 + 공공 도로명주소 좌표 변환 실행(대안, 로컬 배치용):
 
 ```bash
 JUSO_CONFIRM_KEY=발급받은_승인키 npm run fetch:data -- --geocode --geocode-provider=juso --geocode-limit=905 --delay-ms=100
 ```
 
-도로명주소 방식은 `business.juso.go.kr`의 주소검색/좌표제공 API 승인키가 필요합니다. API는 사이트 런타임에서 호출하지 않고 로컬 데이터 생성 시에만 사용합니다. 생성된 좌표는 `data/geocode-cache.json`에 누적 저장되고, 지도 앱은 최종 정적 파일인 `public/data/restaurants.json`만 읽으므로 GitHub Pages 운영 비용은 0원입니다.
+도로명주소 방식은 `business.juso.go.kr`의 주소검색/좌표제공 API 승인키가 필요합니다. 카카오/도로명주소 API는 사이트 런타임에서 호출하지 않고 로컬 데이터 생성 시에만 사용합니다. 생성된 좌표는 `data/geocode-cache.json`에 누적 저장되고, 지도 앱은 최종 정적 파일인 `public/data/restaurants.json`만 읽으므로 GitHub Pages 운영 비용은 0원입니다.
 
 전체 geocoding은 OpenStreetMap Nominatim 정책상 1초 이상 간격으로 천천히 실행해야 합니다. 스크립트는 주소별 캐시를 `data/geocode-cache.json`에 저장하고, 좌표가 있는 항목만 `public/data/restaurants.json`으로 내보냅니다.
 
