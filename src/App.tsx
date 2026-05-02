@@ -120,16 +120,8 @@ function App() {
   return (
     <main className="app-shell">
       <section className="hero-panel" aria-labelledby="page-title">
-        <div className="hero-copy-block">
-          <p className="eyebrow">전국 {restaurants.length.toLocaleString('ko-KR')}개 식당</p>
-          <h1 id="page-title">백년가게 식당 지도</h1>
-          <p className="hero-copy">상호명이나 주소로 검색하고, 지역을 고르면 바로 지도로 확인할 수 있어요.</p>
-        </div>
-        <div className="hero-map-card" aria-hidden="true">
-          <span className="hero-map-pin">🍽️</span>
-          <strong>지역별 노포 탐색</strong>
-          <span>검색 → 지역 선택 → 지도 팝업</span>
-        </div>
+        <p className="eyebrow">전국 {restaurants.length.toLocaleString('ko-KR')}개 식당</p>
+        <h1 id="page-title">백년가게 식당 지도</h1>
       </section>
 
       {loadState === 'loading' && <StatusCard title="데이터를 불러오는 중입니다" description="정적 JSON 파일을 읽고 있어요." />}

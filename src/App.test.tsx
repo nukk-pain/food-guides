@@ -56,13 +56,15 @@ describe('App UX flow', () => {
     vi.unstubAllGlobals()
   })
 
-  it('starts with a search-friendly landing screen and a nationwide map action', async () => {
+  it('starts with a focused landing screen and a nationwide map action', async () => {
     render(<App />)
 
     expect(await screen.findByRole('heading', { name: '백년가게 식당 지도' })).toBeTruthy()
-    expect(screen.getByText('상호명이나 주소로 검색하고, 지역을 고르면 바로 지도로 확인할 수 있어요.')).toBeTruthy()
     expect(screen.getByRole('button', { name: /전체 식당 지도 보기.*2개/ })).toBeTruthy()
     expect(screen.getByRole('searchbox', { name: /검색/ })).toBeTruthy()
+    expect(document.body.textContent).not.toContain('상호명이나 주소로 검색하고, 지역을 고르면 바로 지도로 확인할 수 있어요.')
+    expect(document.body.textContent).not.toContain('지역별 노포 탐색')
+    expect(document.body.textContent).not.toContain('검색 → 지역 선택 → 지도 팝업')
     expect(document.body.textContent).not.toContain('지도와 목록으로 찾기')
     expect(document.body.textContent).not.toContain('인증된 오래된 식당')
     expect(document.body.textContent).not.toContain('곳')

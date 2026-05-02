@@ -42,18 +42,14 @@
 
 .hero-panel {
   display: grid;
-  gap: clamp(20px, 4vw, 40px);
+  gap: 8px;
   align-items: center;
-  padding: clamp(28px, 6vw, 56px);
+  padding: clamp(24px, 5vw, 44px);
   border-radius: var(--radius-hero);
   background:
-    radial-gradient(circle at 86% 12%, rgba(243, 163, 58, 0.3), transparent 32%),
-    radial-gradient(circle at 12% 100%, rgba(23, 53, 31, 0.1), transparent 36%),
+    radial-gradient(circle at 86% 12%, rgba(243, 163, 58, 0.24), transparent 30%),
+    radial-gradient(circle at 12% 100%, rgba(23, 53, 31, 0.08), transparent 34%),
     linear-gradient(135deg, #ffffff 0%, #fff7ea 100%);
-}
-
-.hero-copy-block {
-  max-width: 760px;
 }
 
 .eyebrow {
@@ -73,90 +69,10 @@ p {
 
 h1 {
   max-width: 760px;
-  margin-bottom: 16px;
+  margin-bottom: 0;
   font-size: clamp(2.55rem, 7.6vw, 5.25rem);
   line-height: 0.95;
   letter-spacing: -0.07em;
-}
-
-.hero-copy {
-  max-width: 620px;
-  margin-bottom: 0;
-  color: var(--color-muted);
-  font-size: clamp(1rem, 2.2vw, 1.18rem);
-  font-weight: 650;
-  line-height: 1.55;
-}
-
-.hero-map-card {
-  position: relative;
-  display: grid;
-  min-height: 180px;
-  gap: 8px;
-  align-content: end;
-  overflow: hidden;
-  border: 1px solid rgba(23, 53, 31, 0.16);
-  border-radius: 28px;
-  padding: 22px;
-  background:
-    linear-gradient(90deg, rgba(23, 53, 31, 0.08) 1px, transparent 1px) 0 0 / 32px 32px,
-    linear-gradient(rgba(23, 53, 31, 0.08) 1px, transparent 1px) 0 0 / 32px 32px,
-    var(--color-map-wash);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.52);
-}
-
-.hero-map-card::before,
-.hero-map-card::after {
-  position: absolute;
-  content: '';
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.55);
-}
-
-.hero-map-card::before {
-  width: 130px;
-  height: 130px;
-  top: -42px;
-  right: -26px;
-}
-
-.hero-map-card::after {
-  width: 76px;
-  height: 76px;
-  left: 30px;
-  top: 36px;
-}
-
-.hero-map-pin {
-  position: absolute;
-  top: 58px;
-  left: min(44%, 170px);
-  display: grid;
-  width: 46px;
-  height: 46px;
-  place-items: center;
-  border: 3px solid #fff;
-  border-radius: 999px;
-  background: var(--color-accent);
-  box-shadow: 0 16px 34px rgba(92, 56, 17, 0.28);
-  font-size: 1.35rem;
-}
-
-.hero-map-card strong,
-.hero-map-card > span:not(.hero-map-pin) {
-  position: relative;
-  z-index: 1;
-}
-
-.hero-map-card strong {
-  font-size: 1.2rem;
-  letter-spacing: -0.03em;
-}
-
-.hero-map-card > span:not(.hero-map-pin) {
-  color: var(--color-muted);
-  font-size: 0.92rem;
-  font-weight: 800;
 }
 
 .region-panel {
@@ -575,10 +491,6 @@ h1 {
     font-size: clamp(2.2rem, 12vw, 3.8rem);
   }
 
-  .hero-map-card {
-    min-height: 148px;
-  }
-
   .primary-action {
     width: 100%;
   }
@@ -601,10 +513,6 @@ h1 {
 }
 
 @media (min-width: 861px) {
-  .hero-panel {
-    grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
-  }
-
   .landing-search-card {
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: end;
