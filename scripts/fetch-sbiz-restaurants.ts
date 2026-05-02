@@ -12,10 +12,14 @@ import {
   type SbizListRow,
   SBIZ_LIST_URL,
 } from '../src/sbiz/parser'
+import { geocodeRoadAddressWithJuso } from '../src/sbiz/jusoGeocoder'
+
+type GeocodeProvider = 'nominatim' | 'juso'
 
 type CliOptions = {
   maxPages?: number
   geocode: boolean
+  geocodeProvider: GeocodeProvider
   geocodeLimit?: number
   delayMs: number
 }
@@ -94,20 +98,32 @@ async function fetchListPage(page: number): Promise<string> {
 async function geocodeMissingAddresses(rows: SbizListRow[], cache: GeocodeCache, options: CliOptions) {
   const missingAddresses = [...new Set(rows.map((row) => row.address).filter((address) => !cache[address]))]
   const limit = options.geocodeLimit ?? missingAddresses.length
+  const jusoConfirmationKey = resolveJusoConfirmationKey(options)
 
   for (const [index, address] of missingAddresses.slice(0, limit).entries()) {
-    await delay(Math.max(options.delayMs, 1100))
-    const point = await geocodeAddress(address)
+    await delay(options.geocodeProvider === 'nominatim' ? Math.max(options.delayMs, 1100) : options.delayMs)
+    const point = await geocodeAddress(address, options, jusoConfirmationKey)
     if (point) {
       cache[address] = point
-      console.log(`Geocoded ${index + 1}/${limit}: ${address} -> ${point.lat}, ${point.lng}`)
+      await writeJson(GEOCODE_CACHE_PATH, cache)
+      console.log(`Geocoded ${index + 1}/${limit} via ${options.geocodeProvider}: ${address} -> ${point.lat}, ${point.lng}`)
     } else {
-      console.warn(`No geocode result: ${address}`)
+      console.warn(`No geocode result via ${options.geocodeProvider}: ${address}`)
     }
   }
 }
 
-async function geocodeAddress(address: string): Promise<GeocodePoint | null> {
+async function geocodeAddress(address: string, options: CliOptions, jusoConfirmationKey?: string): Promise<GeocodePoint | null> {
+  if (options.geocodeProvider === 'juso') {
+    if (!jusoConfirmationKey) throw new Error('JUSO_CONFIRM_KEY is required when --geocode-provider=juso')
+    for (const query of geocodeQueryVariants(address)) {
+      const point = await geocodeRoadAddressWithJuso(query, jusoConfirmationKey)
+      if (point) return point
+      await delay(options.delayMs)
+    }
+    return null
+  }
+
   for (const query of geocodeQueryVariants(address)) {
     const point = await geocodeQuery(query)
     if (point) return point
@@ -143,16 +159,28 @@ async function geocodeQuery(query: string): Promise<GeocodePoint | null> {
 }
 
 function parseArgs(args: string[]): CliOptions {
-  const options: CliOptions = { geocode: false, delayMs: 250 }
+  const options: CliOptions = { geocode: false, geocodeProvider: 'nominatim', delayMs: 250 }
 
   for (const arg of args) {
     if (arg === '--geocode') options.geocode = true
     if (arg.startsWith('--max-pages=')) options.maxPages = Number(arg.replace('--max-pages=', ''))
     if (arg.startsWith('--geocode-limit=')) options.geocodeLimit = Number(arg.replace('--geocode-limit=', ''))
     if (arg.startsWith('--delay-ms=')) options.delayMs = Number(arg.replace('--delay-ms=', ''))
+    if (arg.startsWith('--geocode-provider=')) {
+      const provider = arg.replace('--geocode-provider=', '')
+      if (provider !== 'nominatim' && provider !== 'juso') {
+        throw new Error(`Unsupported geocode provider: ${provider}`)
+      }
+      options.geocodeProvider = provider
+    }
   }
 
   return options
+}
+
+function resolveJusoConfirmationKey(options: CliOptions): string | undefined {
+  if (options.geocodeProvider !== 'juso') return undefined
+  return process.env.JUSO_CONFIRM_KEY ?? process.env.JUSO_API_KEY
 }
 
 async function readGeocodeCache(): Promise<GeocodeCache> {

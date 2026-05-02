@@ -8,7 +8,9 @@
 .toolbar,
 .status-card,
 .selected-card,
-.list-panel {
+.list-panel,
+.map-panel,
+.region-panel {
   border: 1px solid rgba(42, 64, 48, 0.13);
   border-radius: 24px;
   background: rgba(255, 255, 255, 0.82);
@@ -54,10 +56,9 @@ h1 {
 
 .toolbar {
   display: grid;
-  grid-template-columns: 1fr auto;
   gap: 16px;
   align-items: end;
-  margin: 18px 0;
+  margin-bottom: 14px;
   padding: 16px;
 }
 
@@ -71,6 +72,7 @@ h1 {
 
 .search-box input {
   width: 100%;
+  min-height: 48px;
   border: 1px solid #d6cfbf;
   border-radius: 16px;
   padding: 14px 16px;
@@ -79,6 +81,10 @@ h1 {
 }
 
 .stats-card {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 500;
   min-width: 154px;
   border-radius: 18px;
   padding: 14px 16px;
@@ -95,15 +101,122 @@ h1 {
   font-size: 1.7rem;
 }
 
+.region-panel {
+  display: grid;
+  gap: 20px;
+  margin-top: 18px;
+  padding: clamp(18px, 5vw, 36px);
+}
+
+.region-heading h2 {
+  margin-bottom: 8px;
+  font-size: clamp(1.8rem, 6vw, 3rem);
+  letter-spacing: -0.05em;
+}
+
+.region-heading p:last-child {
+  margin-bottom: 0;
+  color: #586156;
+}
+
+.province-grid,
+.county-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+  gap: 10px;
+}
+
+.province-button,
+.county-button,
+.selected-area-row button {
+  min-height: 48px;
+  border: 1px solid #e4dece;
+  border-radius: 16px;
+  color: #26342a;
+  background: #fff;
+  font: inherit;
+  font-weight: 800;
+}
+
+.province-button,
+.county-button {
+  display: grid;
+  gap: 4px;
+  padding: 14px 12px;
+  text-align: left;
+}
+
+.province-button span,
+.county-button span {
+  color: #6f786f;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.province-button--active,
+.county-button--primary {
+  border-color: #24442d;
+  color: #fff;
+  background: #24442d;
+}
+
+.province-button--active span,
+.county-button--primary span {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.county-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.county-button--primary {
+  text-align: center;
+  justify-content: center;
+}
+
+.region-hint,
+.empty-list {
+  margin: 0;
+  border-radius: 16px;
+  padding: 16px;
+  color: #586156;
+  background: #fff8ed;
+}
+
+.selected-area-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  color: #24442d;
+  font-weight: 900;
+}
+
+.selected-area-row button {
+  padding: 0 14px;
+  color: #24442d;
+}
+
 .content-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 360px;
+  grid-template-columns: minmax(0, 1fr) 340px;
   gap: 18px;
   align-items: stretch;
+  margin-top: 18px;
+}
+
+.map-panel {
+  position: relative;
+  overflow: hidden;
+  min-height: min(720px, calc(100vh - 180px));
+  padding: 0;
+  background: #d9e4d8;
 }
 
 .restaurant-map {
-  min-height: 640px;
+  min-height: min(720px, calc(100vh - 180px));
+  height: 100%;
   overflow: hidden;
   border: 1px solid rgba(42, 64, 48, 0.13);
   border-radius: 24px;
@@ -129,7 +242,7 @@ h1 {
 }
 
 .list-panel {
-  max-height: 640px;
+  max-height: min(720px, calc(100vh - 180px));
   overflow: auto;
   padding: 14px;
 }
@@ -207,13 +320,27 @@ h1 {
     padding-top: 8px;
   }
 
-  .toolbar,
+  .hero-panel {
+    padding: 22px;
+    border-radius: 20px;
+  }
+
+  h1 {
+    font-size: clamp(2.2rem, 13vw, 4rem);
+  }
+
+  .province-grid,
+  .county-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .content-grid {
     grid-template-columns: 1fr;
   }
 
+  .map-panel,
   .restaurant-map {
-    min-height: 56vh;
+    min-height: 64vh;
   }
 
   .list-panel {
