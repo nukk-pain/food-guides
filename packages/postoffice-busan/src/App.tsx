@@ -2,7 +2,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import './App.css'
 import { RestaurantMap } from './components/RestaurantMap'
 import { homeUrl, imageUrl, restaurantsDataUrl } from './data/restaurantsData'
-import { buildMapLinks, copyableAddressText, normalizePhoneHref } from './domain/mapLinks'
+import {
+  buildGoogleSearchUrl,
+  buildMapLinks,
+  copyableAddressText,
+  normalizePhoneHref,
+} from './domain/mapLinks'
 import {
   filterBySelection,
   getRegionGroups,
@@ -212,6 +217,7 @@ function SelectedRestaurantCard({
 }) {
   const phoneHref = normalizePhoneHref(restaurant.phone)
   const links = buildMapLinks(restaurant)
+  const searchUrl = buildGoogleSearchUrl(restaurant)
 
   return (
     <article className="selected-card" aria-label="선택한 식당 정보">
@@ -266,10 +272,11 @@ function SelectedRestaurantCard({
         </button>
       </div>
 
-      <div className="map-link-row" aria-label="외부 지도에서 보기">
+      <div className="map-link-row" aria-label="외부 링크">
         <a href={links.naver} target="_blank" rel="noreferrer">네이버지도</a>
         <a href={links.kakao} target="_blank" rel="noreferrer">카카오맵</a>
         <a href={links.google} target="_blank" rel="noreferrer">구글맵</a>
+        <a href={searchUrl} target="_blank" rel="noreferrer">구글 검색</a>
       </div>
     </article>
   )

@@ -2,7 +2,13 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import './App.css'
 import { RestaurantMap } from './components/RestaurantMap'
 import { homeUrl, restaurantsDataUrl } from './data/restaurantsData'
-import { copyableAddressText, buildMapLinks, normalizePhoneHref, safeSbizDetailUrl } from './domain/mapLinks'
+import {
+  buildGoogleSearchUrl,
+  buildMapLinks,
+  copyableAddressText,
+  normalizePhoneHref,
+  safeSbizDetailUrl,
+} from './domain/mapLinks'
 import { filterRestaurantStores, type RawRestaurant, type Restaurant } from './domain/restaurants'
 import {
   filterByArea,
@@ -204,6 +210,7 @@ function SelectedRestaurantCard({
 }) {
   const phoneHref = normalizePhoneHref(restaurant.phone)
   const links = buildMapLinks(restaurant)
+  const searchUrl = buildGoogleSearchUrl(restaurant)
   const sourceUrl = safeSbizDetailUrl(restaurant.sourceUrl)
   const province = getProvinceLabel(restaurant.address)
   const county = getCountyLabel(restaurant.address)
@@ -238,10 +245,11 @@ function SelectedRestaurantCard({
         </button>
       </div>
 
-      <div className="map-link-row" aria-label="외부 지도에서 보기">
+      <div className="map-link-row" aria-label="외부 링크">
         <a href={links.naver} target="_blank" rel="noreferrer">네이버지도</a>
         <a href={links.kakao} target="_blank" rel="noreferrer">카카오맵</a>
         <a href={links.google} target="_blank" rel="noreferrer">구글맵</a>
+        <a href={searchUrl} target="_blank" rel="noreferrer">구글 검색</a>
         {sourceUrl && (
           <a href={sourceUrl} target="_blank" rel="noreferrer">원문</a>
         )}
