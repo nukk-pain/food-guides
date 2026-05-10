@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import './App.css'
 import { RestaurantMap } from './components/RestaurantMap'
-import { restaurantsDataUrl } from './data/restaurantsData'
+import { homeUrl, restaurantsDataUrl } from './data/restaurantsData'
 import { copyableAddressText, buildMapLinks, normalizePhoneHref, safeSbizDetailUrl } from './domain/mapLinks'
 import { filterRestaurantStores, type RawRestaurant, type Restaurant } from './domain/restaurants'
 import {
@@ -107,6 +107,7 @@ function App() {
   return (
     <main className="app-shell">
       <header className="page-header">
+        <a className="home-link" href={homeUrl()}>← 가이드 목록</a>
         <h1>백년가게 식당 지도</h1>
         <p className="page-summary">
           전국 백년가게 음식점 {restaurants.length.toLocaleString('ko-KR')}곳

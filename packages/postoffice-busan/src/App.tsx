@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import './App.css'
 import { RestaurantMap } from './components/RestaurantMap'
-import { imageUrl, restaurantsDataUrl } from './data/restaurantsData'
+import { homeUrl, imageUrl, restaurantsDataUrl } from './data/restaurantsData'
 import { buildMapLinks, copyableAddressText, normalizePhoneHref } from './domain/mapLinks'
 import {
   filterBySelection,
@@ -110,6 +110,7 @@ function App() {
   return (
     <main className="app-shell">
       <header className="page-header">
+        <a className="home-link" href={homeUrl()}>← 가이드 목록</a>
         <h1>우체국 추천 맛집가이드</h1>
         <p className="page-summary">
           부산·울산·경남 37개 우체국이 추천한 {restaurants.length.toLocaleString('ko-KR')}곳
