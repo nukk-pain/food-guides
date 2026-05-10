@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://nukk-pain.github.io/baeknyeon-restaurant-map/sitemap.xml
