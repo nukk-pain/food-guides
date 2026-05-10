@@ -1,10 +1,16 @@
 /** @vitest-environment jsdom */
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App'
 
 vi.mock('./components/RestaurantMap', () => ({
-  RestaurantMap: ({ restaurants, onSelect }: { restaurants: typeof sampleRestaurants; onSelect: (restaurant: (typeof sampleRestaurants)[number]) => void }) => (
+  RestaurantMap: ({
+    restaurants,
+    onSelect,
+  }: {
+    restaurants: typeof sampleRestaurants
+    onSelect: (restaurant: (typeof sampleRestaurants)[number]) => void
+  }) => (
     <div data-testid="restaurant-map">
       {restaurants.map((restaurant) => (
         <button key={restaurant.id} type="button" onClick={() => onSelect(restaurant)}>
@@ -40,7 +46,7 @@ const sampleRestaurants = [
   },
 ]
 
-describe('App UX flow', () => {
+describe('App UX flow (picker + map shown together)', () => {
   beforeEach(() => {
     vi.stubGlobal(
       'fetch',
@@ -56,65 +62,54 @@ describe('App UX flow', () => {
     vi.unstubAllGlobals()
   })
 
-  it('starts with a focused landing screen and a nationwide map action', async () => {
+  it('renders header, picker, and map together on first load', async () => {
     render(<App />)
-
     expect(await screen.findByRole('heading', { name: '백년가게 식당 지도' })).toBeTruthy()
-    expect(screen.getByText('전국 백년가게 식당을 검색하고 지도에서 확인하세요.')).toBeTruthy()
-    expect(screen.getByText('데이터: 소상공인시장진흥공단 백년가게 정보 기반 · 수록: 전국 음식점 2개')).toBeTruthy()
-    expect(screen.getByRole('button', { name: /전체 지도.*2개/ })).toBeTruthy()
+    expect(screen.getByText('전국 백년가게 음식점 2곳')).toBeTruthy()
     expect(screen.getByRole('searchbox', { name: /검색/ })).toBeTruthy()
-    expect(document.body.textContent).not.toContain('지역 선택')
-    expect(document.body.textContent).not.toContain('검색으로 바로 찾거나 시·도와 시·군·구를 골라 지도를 열어보세요.')
-    expect(document.body.textContent).not.toContain('전체 식당 지도 보기')
-    expect(document.body.textContent).not.toContain('상호명이나 주소로 검색하고, 지역을 고르면 바로 지도로 확인할 수 있어요.')
-    expect(document.body.textContent).not.toContain('지역별 노포 탐색')
-    expect(document.body.textContent).not.toContain('검색 → 지역 선택 → 지도 팝업')
-    expect(document.body.textContent).not.toContain('지도와 목록으로 찾기')
-    expect(document.body.textContent).not.toContain('인증된 오래된 식당')
-    expect(document.body.textContent).not.toContain('곳')
+    expect(screen.getByRole('combobox', { name: /시·도/ })).toBeTruthy()
+    expect(screen.getByRole('combobox', { name: /시·군·구/ })).toBeTruthy()
+    expect(screen.getByTestId('restaurant-map')).toBeTruthy()
+    // both restaurants visible by default
+    expect(screen.getByText('고령금산한우')).toBeTruthy()
+    expect(screen.getByText('서울국밥')).toBeTruthy()
   })
 
-  it('lets users search before choosing a region and open the matching area', async () => {
+  it('filters markers as the search query changes', async () => {
     render(<App />)
-
-    const searchBox = await screen.findByRole('searchbox', { name: /검색/ })
-    fireEvent.change(searchBox, { target: { value: '서울' } })
-
+    await screen.findByTestId('restaurant-map')
+    fireEvent.change(screen.getByRole('searchbox', { name: /검색/ }), { target: { value: '서울' } })
     expect(screen.getByText('서울국밥')).toBeTruthy()
     expect(screen.queryByText('고령금산한우')).toBeNull()
-
-    fireEvent.click(screen.getByRole('button', { name: /지도 보기.*1개/ }))
-
-    await screen.findByTestId('restaurant-map')
-    expect(screen.queryByText('서울 종로구')).toBeNull()
-    expect(document.body.textContent).not.toContain('표시 중')
-    expect(document.body.textContent).not.toContain('곳')
-
-    fireEvent.click(screen.getByRole('button', { name: '서울국밥' }))
-
-    const detailCard = screen.getByText('서울특별시 종로구 종로 1').closest('.map-detail-card')
-    expect(detailCard).toBeTruthy()
-    expect(detailCard?.previousElementSibling?.classList.contains('map-panel')).toBe(true)
-    await waitFor(() => expect(screen.getByRole('link', { name: '전화하기' }).getAttribute('href')).toBe('tel:021234567'))
   })
 
-  it('uses province and county dropdowns before opening the map', async () => {
+  it('filters markers via province dropdown without a confirm button', async () => {
     render(<App />)
-
-    const provinceSelect = await screen.findByRole('combobox', { name: '시·도' })
-    fireEvent.change(provinceSelect, { target: { value: '서울' } })
-
-    const countySelect = screen.getByRole('combobox', { name: '시·군·구' })
-    fireEvent.change(countySelect, { target: { value: '종로구' } })
-    fireEvent.click(screen.getByRole('button', { name: '지도 보기' }))
-
     await screen.findByTestId('restaurant-map')
-    expect(document.body.textContent).not.toContain('표시 중')
-    expect(screen.queryByText('서울특별시 종로구 종로 1')).toBeNull()
+    fireEvent.change(screen.getByRole('combobox', { name: /시·도/ }), { target: { value: '서울' } })
+    expect(screen.queryByText('고령금산한우')).toBeNull()
+    expect(screen.getByText('서울국밥')).toBeTruthy()
+  })
 
+  it('opens a detail card when a marker is selected', async () => {
+    render(<App />)
+    await screen.findByTestId('restaurant-map')
     fireEvent.click(screen.getByRole('button', { name: '서울국밥' }))
-
     expect(screen.getByText('서울특별시 종로구 종로 1')).toBeTruthy()
+    const phoneLink = screen.getByRole('link', { name: '전화하기' })
+    expect(phoneLink.getAttribute('href')).toBe('tel:021234567')
+    // 외부 지도 + sbiz 원문 링크가 모두 노출
+    expect(screen.getByRole('link', { name: '네이버지도' })).toBeTruthy()
+    expect(screen.getByRole('link', { name: '원문' })).toBeTruthy()
+  })
+
+  it('clears filters back to the full set via the 초기화 button', async () => {
+    render(<App />)
+    await screen.findByTestId('restaurant-map')
+    fireEvent.change(screen.getByRole('searchbox', { name: /검색/ }), { target: { value: '서울' } })
+    expect(screen.queryByText('고령금산한우')).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: '초기화' }))
+    expect(screen.getByText('고령금산한우')).toBeTruthy()
+    expect(screen.getByText('서울국밥')).toBeTruthy()
   })
 })

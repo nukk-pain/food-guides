@@ -6,10 +6,8 @@ import { buildMapLinks, copyableAddressText, normalizePhoneHref } from './domain
 import {
   filterBySelection,
   getRegionGroups,
-  REGIONS,
   type RegionGroup,
   type Region,
-  type Selection,
 } from './domain/postOffices'
 import {
   hasCoordinates,
@@ -19,21 +17,18 @@ import {
 } from './domain/restaurants'
 
 type LoadState = 'loading' | 'ready' | 'empty' | 'error'
-type MapScope = 'all' | Selection | null
 
 function App() {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([])
   const [loadState, setLoadState] = useState<LoadState>('loading')
   const [query, setQuery] = useState('')
-  const [mapScope, setMapScope] = useState<MapScope>(null)
-  const [activeRegion, setActiveRegion] = useState<Region | null>(null)
+  const [activeRegion, setActiveRegion] = useState<Region | ''>('')
   const [activePostOffice, setActivePostOffice] = useState('')
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [copiedId, setCopiedId] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
-
     async function load() {
       try {
         const res = await fetch(restaurantsDataUrl())
@@ -48,7 +43,6 @@ function App() {
         if (!cancelled) setLoadState('error')
       }
     }
-
     load()
     return () => {
       cancelled = true
@@ -61,14 +55,15 @@ function App() {
     [activeRegion, regionGroups],
   )
 
-  const searchResults = useMemo(() => searchRestaurants(restaurants, query), [query, restaurants])
+  const scoped = useMemo(() => {
+    if (!activeRegion) return restaurants
+    return filterBySelection(restaurants, {
+      region: activeRegion,
+      ...(activePostOffice ? { postOffice: activePostOffice } : {}),
+    })
+  }, [activeRegion, activePostOffice, restaurants])
 
-  const scopedRestaurants = useMemo(() => {
-    if (mapScope === 'all') return restaurants
-    return filterBySelection(restaurants, mapScope)
-  }, [mapScope, restaurants])
-
-  const filtered = useMemo(() => searchRestaurants(scopedRestaurants, query), [query, scopedRestaurants])
+  const filtered = useMemo(() => searchRestaurants(scoped, query), [query, scoped])
   const placeable = useMemo(() => filtered.filter(hasCoordinates), [filtered])
 
   const selected = useMemo(
@@ -79,30 +74,20 @@ function App() {
   const handleSelect = useCallback((r: Restaurant) => setSelectedId(r.id), [])
 
   const handleRegionSelect = useCallback((value: string) => {
-    setActiveRegion((value as Region) || null)
+    setActiveRegion((value as Region) || '')
     setActivePostOffice('')
+    setSelectedId(null)
   }, [])
 
   const handlePostOfficeSelect = useCallback((value: string) => {
     setActivePostOffice(value)
-  }, [])
-
-  const handleSelectionOpen = useCallback(() => {
-    if (!activeRegion) return
-    setMapScope({
-      region: activeRegion,
-      ...(activePostOffice ? { postOffice: activePostOffice } : {}),
-    })
-    setSelectedId(null)
-  }, [activeRegion, activePostOffice])
-
-  const handleAllSelect = useCallback(() => {
-    setMapScope('all')
     setSelectedId(null)
   }, [])
 
-  const handleBackToPicker = useCallback(() => {
-    setMapScope(null)
+  const handleClearFilters = useCallback(() => {
+    setQuery('')
+    setActiveRegion('')
+    setActivePostOffice('')
     setSelectedId(null)
   }, [])
 
@@ -120,195 +105,96 @@ function App() {
     }
   }, [])
 
+  const hasFilter = query.trim() !== '' || activeRegion !== '' || activePostOffice !== ''
+
   return (
     <main className="app-shell">
-      <section className="hero-panel" aria-labelledby="page-title">
-        <p className="eyebrow">부산·울산·경남 37개 우체국 · 추천 {restaurants.length.toLocaleString('ko-KR')}곳</p>
-        <h1 id="page-title">우체국 추천 맛집가이드</h1>
-        <p className="hero-description">2025년 부산지방우정청이 추천한 맛집 245곳을 권역과 우체국별로 둘러보세요.</p>
-      </section>
+      <header className="page-header">
+        <h1>우체국 추천 맛집가이드</h1>
+        <p className="page-summary">
+          부산·울산·경남 37개 우체국이 추천한 {restaurants.length.toLocaleString('ko-KR')}곳
+        </p>
+      </header>
 
-      {loadState === 'loading' && (
-        <StatusCard title="데이터를 불러오는 중입니다" description="정적 JSON 파일을 읽고 있어요." />
-      )}
-      {loadState === 'error' && (
-        <StatusCard
-          title="데이터를 불러오지 못했습니다"
-          description="public/data/restaurants.json 파일이 빌드되었는지 확인해주세요. (npm run transform:data)"
-        />
-      )}
-      {loadState === 'empty' && (
-        <StatusCard title="표시할 식당이 없습니다" description="추출된 식당 데이터가 비어 있습니다." />
-      )}
+      {loadState === 'loading' && <StatusCard title="불러오는 중" description="식당 데이터를 읽고 있어요." />}
+      {loadState === 'error' && <StatusCard title="불러오지 못했습니다" description="잠시 후 다시 시도해주세요." />}
+      {loadState === 'empty' && <StatusCard title="표시할 식당이 없습니다" description="추출된 데이터가 비어 있습니다." />}
 
-      {loadState === 'ready' && !mapScope && (
-        <RegionPicker
-          allCount={searchResults.length}
-          regionGroups={regionGroups}
-          activeRegion={activeRegion}
-          activePostOffice={activePostOffice}
-          activeRegionGroup={activeRegionGroup}
-          query={query}
-          searchResults={searchResults}
-          onQueryChange={setQuery}
-          onRegionSelect={handleRegionSelect}
-          onPostOfficeSelect={handlePostOfficeSelect}
-          onOpenSelection={handleSelectionOpen}
-          onAllSelect={handleAllSelect}
-        />
-      )}
-
-      {loadState === 'ready' && mapScope && (
-        <section className="map-screen" aria-label="추천 맛집 지도">
-          <div className="map-toolbar">
-            <button type="button" className="ghost-button" onClick={handleBackToPicker}>
-              ← 지역 다시 고르기
-            </button>
-            <span className="map-toolbar__count">
-              {placeable.length.toLocaleString('ko-KR')}곳 표시
-              {filtered.length > placeable.length && (
-                <em className="muted"> · 좌표 미수집 {filtered.length - placeable.length}곳</em>
+      {loadState === 'ready' && (
+        <>
+          <section className="picker" aria-label="검색 및 필터">
+            <div className="picker__search">
+              <input
+                aria-label="검색"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="상호·주소·메뉴"
+                type="search"
+                inputMode="search"
+              />
+            </div>
+            <div className="picker__filters">
+              <label className="select-box">
+                <span>권역</span>
+                <select value={activeRegion} onChange={(e) => handleRegionSelect(e.target.value)}>
+                  <option value="">전체</option>
+                  {regionGroups.map((g) => (
+                    <option key={g.region} value={g.region}>
+                      {g.region} ({g.count.toLocaleString('ko-KR')})
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="select-box">
+                <span>우체국</span>
+                <select
+                  value={activePostOffice}
+                  disabled={!activeRegionGroup}
+                  onChange={(e) => handlePostOfficeSelect(e.target.value)}
+                >
+                  <option value="">{activeRegionGroup ? '전체' : '권역 먼저'}</option>
+                  {activeRegionGroup?.postOffices.map((opt) => (
+                    <option key={opt.name} value={opt.name}>
+                      {opt.name} ({opt.count.toLocaleString('ko-KR')})
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            <div className="picker__status" aria-live="polite">
+              <strong>{filtered.length.toLocaleString('ko-KR')}곳</strong>
+              <span className="muted">
+                {placeable.length < filtered.length
+                  ? ` · 지도 표시 ${placeable.length.toLocaleString('ko-KR')}곳`
+                  : ''}
+              </span>
+              {hasFilter && (
+                <button type="button" className="ghost-button" onClick={handleClearFilters}>
+                  초기화
+                </button>
               )}
-            </span>
-          </div>
-          <div className="map-panel">
+            </div>
+          </section>
+
+          <section className="map-panel" aria-label="식당 지도">
             <RestaurantMap restaurants={filtered} selectedId={selected?.id ?? null} onSelect={handleSelect} />
-          </div>
+          </section>
+
           {selected && (
             <SelectedRestaurantCard
               copied={copiedId === selected.id}
               restaurant={selected}
               onCopyAddress={handleCopyAddress}
+              onClose={() => setSelectedId(null)}
             />
           )}
-        </section>
-      )}
 
-      {loadState === 'ready' && (
-        <footer className="data-notice" aria-label="데이터 출처">
-          데이터: 부산지방우정청 「2025년판 우체국 추천 맛집가이드」 ·
-          수록 {restaurants.length.toLocaleString('ko-KR')}곳
-        </footer>
+          <footer className="data-notice" aria-label="데이터 출처">
+            데이터: 부산지방우정청 「2025년판 우체국 추천 맛집가이드」
+          </footer>
+        </>
       )}
     </main>
-  )
-}
-
-function RegionPicker({
-  allCount,
-  regionGroups,
-  activeRegion,
-  activePostOffice,
-  activeRegionGroup,
-  query,
-  searchResults,
-  onQueryChange,
-  onRegionSelect,
-  onPostOfficeSelect,
-  onOpenSelection,
-  onAllSelect,
-}: {
-  allCount: number
-  regionGroups: RegionGroup[]
-  activeRegion: Region | null
-  activePostOffice: string
-  activeRegionGroup: RegionGroup | null
-  query: string
-  searchResults: Restaurant[]
-  onQueryChange: (q: string) => void
-  onRegionSelect: (value: string) => void
-  onPostOfficeSelect: (value: string) => void
-  onOpenSelection: () => void
-  onAllSelect: () => void
-}) {
-  const previewResults = query.trim() ? searchResults.slice(0, 6) : []
-  const primaryLabel = query.trim() ? '검색 결과 지도' : '전체 지도'
-
-  return (
-    <section className="region-panel" aria-label="검색 및 지역 선택">
-      <div className="landing-search-card">
-        <div className="search-box">
-          <input
-            aria-label="검색"
-            value={query}
-            onChange={(e) => onQueryChange(e.target.value)}
-            placeholder="상호·주소·우체국·메뉴"
-            type="search"
-          />
-        </div>
-        <button className="primary-action" type="button" onClick={onAllSelect}>
-          {primaryLabel} · {allCount.toLocaleString('ko-KR')}곳
-        </button>
-      </div>
-
-      {previewResults.length > 0 && (
-        <div className="search-preview" aria-label="검색 미리보기">
-          {previewResults.map((r) => (
-            <button key={r.id} type="button" onClick={onAllSelect}>
-              <strong>{r.name}</strong>
-              <span>
-                {r.postOffice} 추천 {r.recommendationNo}
-              </span>
-            </button>
-          ))}
-        </div>
-      )}
-
-      <div className="region-select-grid" aria-label="권역·우체국 필터">
-        <div className="select-box">
-          <select
-            aria-label="권역"
-            value={activeRegion ?? ''}
-            onChange={(e) => onRegionSelect(e.target.value)}
-          >
-            <option value="">권역</option>
-            {regionGroups.map((group) => (
-              <option key={group.region} value={group.region}>
-                {group.region} ({group.count.toLocaleString('ko-KR')})
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="select-box">
-          <select
-            aria-label="우체국"
-            disabled={!activeRegionGroup}
-            value={activePostOffice}
-            onChange={(e) => onPostOfficeSelect(e.target.value)}
-          >
-            <option value="">전체 우체국</option>
-            {activeRegionGroup?.postOffices.map((opt) => (
-              <option key={opt.name} value={opt.name}>
-                {opt.name} ({opt.count.toLocaleString('ko-KR')})
-              </option>
-            ))}
-          </select>
-        </div>
-        <button
-          className="primary-action"
-          type="button"
-          disabled={!activeRegion}
-          onClick={onOpenSelection}
-        >
-          선택 지도 보기
-        </button>
-      </div>
-
-      <details className="region-meta">
-        <summary>권역별 우체국 수록 현황</summary>
-        <ul className="region-meta__list">
-          {REGIONS.map((region) => {
-            const group = regionGroups.find((g) => g.region === region)
-            return (
-              <li key={region}>
-                <strong>{region}</strong>
-                <span>{group ? `${group.postOffices.length}개 우체국 · ${group.count}곳` : '데이터 없음'}</span>
-              </li>
-            )
-          })}
-        </ul>
-      </details>
-    </section>
   )
 }
 
@@ -316,32 +202,38 @@ function SelectedRestaurantCard({
   copied,
   restaurant,
   onCopyAddress,
+  onClose,
 }: {
   copied: boolean
   restaurant: Restaurant
   onCopyAddress: (r: Restaurant) => Promise<void>
+  onClose: () => void
 }) {
   const phoneHref = normalizePhoneHref(restaurant.phone)
   const links = buildMapLinks(restaurant)
-  const heroImage = restaurant.images[0]
 
   return (
     <article className="selected-card" aria-label="선택한 식당 정보">
-      {heroImage && (
-        <div className="selected-card__hero">
-          <img src={imageUrl(heroImage)} alt={restaurant.name} loading="lazy" />
-        </div>
-      )}
       <header className="selected-card__header">
-        <p className="selected-card__post">
-          {restaurant.postOffice} · 추천 {restaurant.recommendationNo}
-          {restaurant.postOfficeArea && (
-            <span className="muted"> ({restaurant.postOfficeArea})</span>
-          )}
-        </p>
+        <div className="selected-card__title-row">
+          <p className="selected-card__post">
+            {restaurant.postOffice} · 추천 {restaurant.recommendationNo}
+          </p>
+          <button className="icon-button" type="button" onClick={onClose} aria-label="닫기">
+            ×
+          </button>
+        </div>
         <h2>{restaurant.name}</h2>
         {restaurant.description && <p className="selected-card__desc">{restaurant.description}</p>}
       </header>
+
+      {restaurant.images.length > 0 && (
+        <section className="thumb-grid" aria-label="식당 사진">
+          {restaurant.images.map((path) => (
+            <img key={path} src={imageUrl(path)} alt="" loading="lazy" />
+          ))}
+        </section>
+      )}
 
       {restaurant.menu && (
         <section className="selected-card__row">
@@ -378,14 +270,6 @@ function SelectedRestaurantCard({
         <a href={links.kakao} target="_blank" rel="noreferrer">카카오맵</a>
         <a href={links.google} target="_blank" rel="noreferrer">구글맵</a>
       </div>
-
-      {restaurant.images.length > 1 && (
-        <section className="selected-card__gallery" aria-label="식당 사진">
-          {restaurant.images.slice(1).map((path) => (
-            <img key={path} src={imageUrl(path)} alt="" loading="lazy" />
-          ))}
-        </section>
-      )}
     </article>
   )
 }
@@ -403,7 +287,9 @@ function searchRestaurants(restaurants: Restaurant[], query: string): Restaurant
   const q = query.trim().toLocaleLowerCase('ko-KR')
   if (!q) return restaurants
   return restaurants.filter((r) => {
-    const haystack = [r.name, r.postOffice, r.address, r.description, r.menu].join(' ').toLocaleLowerCase('ko-KR')
+    const haystack = [r.name, r.postOffice, r.address, r.description, r.menu]
+      .join(' ')
+      .toLocaleLowerCase('ko-KR')
     return haystack.includes(q)
   })
 }
