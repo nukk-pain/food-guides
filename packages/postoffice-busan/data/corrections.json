@@ -1,0 +1,31 @@
+{
+  "_comment": "Manual overrides applied AFTER PDF extraction. Used when the PDF text layer itself contains a typo or ambiguous wording. Each key is a restaurant id; values are field overrides.",
+  "산청우체국-3": {
+    "address": "경상남도 산청군 산청읍 꽃봉산로 115",
+    "_addressOriginal": "경상남도 산청군 산천읍 꽃봉산로 115",
+    "_reason": "PDF 출판물 오타 — 산청군에는 '산천읍' 행정구역이 없고 '산청읍'이 정상."
+  },
+  "진해우체국-3": {
+    "address": "경남 창원시 진해구 백구로 13",
+    "_addressOriginal": "경남 창원시 진해구 백구로13 102, 103(근화동 보문빌딩)",
+    "_reason": "PDF 약식 표기 '백구로13 102' = '백구로 13(번지) 102(호)'. 카카오는 도로명+번지까지 매칭하므로 호수(102, 103)와 빌딩명(근화동 보문빌딩)은 query에서 분리. 표시·정확도 모두 도로명+번지 단위면 충분."
+  },
+  "남부산우체국-6": {
+    "address": "부산광역시 수영구 수영로705번길 15",
+    "_addressOriginal": "부산광역시 수영구 705번길 15",
+    "_reason": "PDF 표기에 도로명 prefix '수영로' 누락. 정식 도로명은 '수영로705번길' (Naver Local Search '구자윤과자점 수영점' 검증)."
+  },
+  "동부산우체국-2": {
+    "address": "부산광역시 동구 부산진성공원로 23-9",
+    "_addressOriginal": "부산광역시 동구 자성공원로 23-9",
+    "_reason": "PDF 표기 '자성공원로'는 prefix '부산진성' 누락. 정식 도로명은 '부산진성공원로' (사용자 확인 + Naver Local Search '명가' 검증)."
+  },
+  "동부산우체국-6": {
+    "address": "부산광역시 동구 부산진성공원로3번길 15",
+    "_addressOriginal": "부산광역시 동구 자성공원로3번길 15",
+    "_reason": "PDF 표기 '자성공원로3번길'는 prefix '부산진성' 누락. 정식 도로명은 '부산진성공원로3번길' (Naver Local Search '다다우동' 검증)."
+  },
+  "거창우체국-3": {
+    "_note": "address는 PDF 그대로 정확. 카카오/Naver 인덱싱 누락. ArcGIS 제거 후 마지막 polestar provider로도 못 잡으면 좌표 미수집으로 둠 (카드는 정상 노출)."
+  }
+}

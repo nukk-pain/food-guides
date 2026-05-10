@@ -28,12 +28,16 @@ PKG_DIR = SCRIPT_DIR.parent
 PDF_PATH = PKG_DIR / "data" / "source" / "postoffice-busan-2025.pdf"
 OUT_JSON = PKG_DIR / "data" / "raw" / "postoffice-busan-2025.json"
 OUT_IMG_DIR = PKG_DIR / "data" / "raw" / "images"
+CORRECTIONS_PATH = PKG_DIR / "data" / "corrections.json"
 
 ANCHOR_RE = re.compile(
     r"^(?P<post>[가-힣]+우체국)(?:\s*\((?P<area>[^)]+)\))?\s*추천\s*(?P<no>\d+)\s*$"
 )
 PHONE_RE = re.compile(r"\b(?:\d{2,4}-\d{3,4}-\d{4}|\d{4}-\d{4})\b")
-ADDR_PREFIXES = ("부산광역시", "울산광역시", "경상남도", "경남", "부산", "울산")
+# Use full provincial names + only "경남" as a short form. Single-word "부산"/"울산"
+# would match descriptions starting with the word (e.g. "부산하면 밀면!"), causing
+# description spans to be misclassified as addresses.
+ADDR_PREFIXES = ("부산광역시", "울산광역시", "경상남도", "경상북도", "경남")
 HOURS_HINTS = ("휴무", "연중무휴", "라스트오더", "정기휴무", "영업")
 TIME_RE = re.compile(r"\d{1,2}:\d{2}")
 PRICE_RE = re.compile(r"[₩￦]")
@@ -97,6 +101,25 @@ def normalize(text: str) -> str:
     for k, v in TEXT_REPLACE.items():
         text = text.replace(k, v)
     return text.strip()
+
+
+# Trailing fragments that confuse Kakao's address index — building names in
+# parentheses, "N~M층", floor/unit suffixes glued to road addresses.
+_FLOOR_SUFFIX_RE = re.compile(r"\s+(?:\d+(?:~\d+)?층|지하\s*\d+층)\s*$")
+_PAREN_SUFFIX_RE = re.compile(r"\s*\([^)]*\)\s*$")
+_UNIT_SUFFIX_RE = re.compile(r",\s*\d+(?:호|층|호점|동)?(?:\s*,\s*\d+(?:호|층|호점|동)?)*\s*$")
+
+
+def sanitize_address(addr: str) -> str:
+    """Strip trailing parenthetical building names and floor/unit suffixes."""
+    prev = None
+    cleaned = addr
+    while cleaned != prev:
+        prev = cleaned
+        cleaned = _FLOOR_SUFFIX_RE.sub("", cleaned)
+        cleaned = _PAREN_SUFFIX_RE.sub("", cleaned)
+        cleaned = _UNIT_SUFFIX_RE.sub("", cleaned)
+    return cleaned.strip()
 
 
 @dataclass
@@ -281,11 +304,11 @@ def classify_card_text(card: Card, spans: list[Span]) -> dict:
             menu_parts.append(t)
             continue
         if any(t.startswith(p) for p in ADDR_PREFIXES):
-            # First address line wins; ignore subsequent ones (multi-line addresses joined later)
+            cleaned = sanitize_address(t)
             if not address:
-                address = t
+                address = cleaned
             else:
-                address += " " + t
+                address += " " + cleaned
             continue
         if any(h in t for h in HOURS_HINTS) or TIME_RE.search(t):
             hours = (hours + " " + t).strip()
@@ -408,6 +431,23 @@ def main() -> None:
             if args.debug_page == pno:
                 print(json.dumps(asdict(r), ensure_ascii=False, indent=2))
             restaurants.append(r)
+
+    # Apply manual corrections for PDF publishing typos (산청 행정구역 오타 등)
+    if CORRECTIONS_PATH.exists():
+        corrections = json.loads(CORRECTIONS_PATH.read_text(encoding="utf-8"))
+        applied = 0
+        for r in restaurants:
+            override = corrections.get(r.id)
+            if not isinstance(override, dict):
+                continue
+            for field, value in override.items():
+                if field.startswith("_"):
+                    continue
+                if hasattr(r, field):
+                    setattr(r, field, value)
+                    applied += 1
+        if applied:
+            print(f"Applied {applied} field correction(s) from data/corrections.json")
 
     restaurants.sort(key=lambda r: (r.region, r.postOffice, r.recommendationNo))
 

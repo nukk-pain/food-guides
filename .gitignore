@@ -17,3 +17,8 @@ coverage/
 
 # Source PDFs (re-distribution license undecided; keep local only)
 packages/*/data/source/*.pdf
+
+# Geocoded data file is committed (it's the dataset), but not the cache —
+# cache is ephemeral and regenerable from raw + Kakao API.
+# (Decision: commit cache too — saves API quota on rebuilds. Override here if needed.)
+
