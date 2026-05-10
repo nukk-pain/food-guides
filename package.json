@@ -1,0 +1,10 @@
+{
+  "name": "food-guides",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Static restaurant guide map sites — bundled landing + per-guide map pages.",
+  "workspaces": [
+    "packages/*",
+    "landing"
+  ]
+}
