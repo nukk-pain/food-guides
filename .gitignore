@@ -3,9 +3,17 @@ dist/
 .vite/
 coverage/
 
+# Python venv (per-package, used only by extraction scripts)
+**/.venv/
+**/__pycache__/
+*.pyc
+
 *.log
 .DS_Store
 
 .env
 .env.*
 !.env.example
+
+# Source PDFs (re-distribution license undecided; keep local only)
+packages/*/data/source/*.pdf
