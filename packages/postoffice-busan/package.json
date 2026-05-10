@@ -1,0 +1,7 @@
+{
+  "name": "postoffice-busan",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "부산지방우정청 2025년판 우체국 추천 맛집가이드 (245곳) 정적 지도 페이지."
+}

@@ -1,0 +1,7 @@
+{
+  "name": "landing",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "food-guides 상위 페이지 — 각 가이드 카드 + 검색 허브."
+}
