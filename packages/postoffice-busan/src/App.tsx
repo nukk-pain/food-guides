@@ -134,7 +134,7 @@ function App() {
                 aria-label="검색"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="상호·주소·메뉴"
+                placeholder="상호·주소"
                 type="search"
                 inputMode="search"
               />
@@ -294,10 +294,10 @@ function StatusCard({ title, description }: { title: string; description: string
 function searchRestaurants(restaurants: Restaurant[], query: string): Restaurant[] {
   const q = query.trim().toLocaleLowerCase('ko-KR')
   if (!q) return restaurants
+  // 상호 + 주소만 매칭. 우체국명은 picker 드롭다운에서, 메뉴/소개 단어는
+  // false positive 가 많아 검색 대상에서 제외.
   return restaurants.filter((r) => {
-    const haystack = [r.name, r.postOffice, r.address, r.description, r.menu]
-      .join(' ')
-      .toLocaleLowerCase('ko-KR')
+    const haystack = [r.name, r.address].join(' ').toLocaleLowerCase('ko-KR')
     return haystack.includes(q)
   })
 }
