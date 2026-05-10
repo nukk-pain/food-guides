@@ -1,19 +1,19 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import './App.css'
-import { RestaurantMap } from './components/RestaurantMap'
-import { homeUrl, imageUrl, restaurantsDataUrl } from './data/restaurantsData'
 import {
+  RestaurantMap,
+  buildPopupHtml,
   buildGoogleSearchUrl,
   buildMapLinks,
   copyableAddressText,
+  filterByArea,
+  getAreaOptions,
+  getCountyLabel,
+  getProvinceLabel,
   normalizePhoneHref,
-} from './domain/mapLinks'
-import {
-  filterBySelection,
-  getRegionGroups,
-  type RegionGroup,
-  type Region,
-} from './domain/postOffices'
+  type ProvinceOption,
+} from '@food-guides/shared'
+import { homeUrl, imageUrl, restaurantsDataUrl } from './data/restaurantsData'
 import {
   hasCoordinates,
   normalizeRestaurants,
@@ -27,8 +27,8 @@ function App() {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([])
   const [loadState, setLoadState] = useState<LoadState>('loading')
   const [query, setQuery] = useState('')
-  const [activeRegion, setActiveRegion] = useState<Region | ''>('')
-  const [activePostOffice, setActivePostOffice] = useState('')
+  const [activeProvince, setActiveProvince] = useState('')
+  const [activeCounty, setActiveCounty] = useState('')
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [copiedId, setCopiedId] = useState<string | null>(null)
 
@@ -54,19 +54,19 @@ function App() {
     }
   }, [])
 
-  const regionGroups = useMemo(() => getRegionGroups(restaurants), [restaurants])
-  const activeRegionGroup = useMemo<RegionGroup | null>(
-    () => regionGroups.find((g) => g.region === activeRegion) ?? null,
-    [activeRegion, regionGroups],
+  const areaOptions = useMemo(() => getAreaOptions(restaurants), [restaurants])
+  const activeProvinceOption = useMemo<ProvinceOption | null>(
+    () => areaOptions.find((option) => option.province === activeProvince) ?? null,
+    [activeProvince, areaOptions],
   )
 
   const scoped = useMemo(() => {
-    if (!activeRegion) return restaurants
-    return filterBySelection(restaurants, {
-      region: activeRegion,
-      ...(activePostOffice ? { postOffice: activePostOffice } : {}),
+    if (!activeProvince) return restaurants
+    return filterByArea(restaurants, {
+      province: activeProvince,
+      ...(activeCounty ? { county: activeCounty } : {}),
     })
-  }, [activeRegion, activePostOffice, restaurants])
+  }, [activeCounty, activeProvince, restaurants])
 
   const filtered = useMemo(() => searchRestaurants(scoped, query), [query, scoped])
   const placeable = useMemo(() => filtered.filter(hasCoordinates), [filtered])
@@ -78,21 +78,21 @@ function App() {
 
   const handleSelect = useCallback((r: Restaurant) => setSelectedId(r.id), [])
 
-  const handleRegionSelect = useCallback((value: string) => {
-    setActiveRegion((value as Region) || '')
-    setActivePostOffice('')
+  const handleProvinceSelect = useCallback((value: string) => {
+    setActiveProvince(value)
+    setActiveCounty('')
     setSelectedId(null)
   }, [])
 
-  const handlePostOfficeSelect = useCallback((value: string) => {
-    setActivePostOffice(value)
+  const handleCountySelect = useCallback((value: string) => {
+    setActiveCounty(value)
     setSelectedId(null)
   }, [])
 
   const handleClearFilters = useCallback(() => {
     setQuery('')
-    setActiveRegion('')
-    setActivePostOffice('')
+    setActiveProvince('')
+    setActiveCounty('')
     setSelectedId(null)
   }, [])
 
@@ -110,7 +110,7 @@ function App() {
     }
   }, [])
 
-  const hasFilter = query.trim() !== '' || activeRegion !== '' || activePostOffice !== ''
+  const hasFilter = query.trim() !== '' || activeProvince !== '' || activeCounty !== ''
 
   return (
     <main className="app-shell">
@@ -128,7 +128,7 @@ function App() {
 
       {loadState === 'ready' && (
         <>
-          <section className="picker" aria-label="검색 및 필터">
+          <section className="picker" aria-label="검색 및 지역 선택">
             <div className="picker__search">
               <input
                 aria-label="검색"
@@ -141,27 +141,27 @@ function App() {
             </div>
             <div className="picker__filters">
               <label className="select-box">
-                <span>권역</span>
-                <select value={activeRegion} onChange={(e) => handleRegionSelect(e.target.value)}>
+                <span>시·도</span>
+                <select value={activeProvince} onChange={(e) => handleProvinceSelect(e.target.value)}>
                   <option value="">전체</option>
-                  {regionGroups.map((g) => (
-                    <option key={g.region} value={g.region}>
-                      {g.region} ({g.count.toLocaleString('ko-KR')})
+                  {areaOptions.map((option) => (
+                    <option key={option.province} value={option.province}>
+                      {option.province} ({option.count.toLocaleString('ko-KR')})
                     </option>
                   ))}
                 </select>
               </label>
               <label className="select-box">
-                <span>우체국</span>
+                <span>시·군·구</span>
                 <select
-                  value={activePostOffice}
-                  disabled={!activeRegionGroup}
-                  onChange={(e) => handlePostOfficeSelect(e.target.value)}
+                  value={activeCounty}
+                  disabled={!activeProvinceOption}
+                  onChange={(e) => handleCountySelect(e.target.value)}
                 >
-                  <option value="">{activeRegionGroup ? '전체' : '권역 먼저'}</option>
-                  {activeRegionGroup?.postOffices.map((opt) => (
-                    <option key={opt.name} value={opt.name}>
-                      {opt.name} ({opt.count.toLocaleString('ko-KR')})
+                  <option value="">{activeProvinceOption ? '전체' : '시·도 먼저'}</option>
+                  {activeProvinceOption?.counties.map((option) => (
+                    <option key={option.county} value={option.county}>
+                      {option.county} ({option.count.toLocaleString('ko-KR')})
                     </option>
                   ))}
                 </select>
@@ -183,7 +183,16 @@ function App() {
           </section>
 
           <section className="map-panel" aria-label="식당 지도">
-            <RestaurantMap restaurants={filtered} selectedId={selected?.id ?? null} onSelect={handleSelect} />
+            <RestaurantMap
+              restaurants={filtered}
+              selectedId={selected?.id ?? null}
+              onSelect={handleSelect}
+              defaultCenter={[35.3, 128.8]}
+              defaultZoom={9}
+              markerEmoji="📮"
+              ariaLabel="우체국 추천 맛집 지도"
+              buildPopupHtml={(r) => buildPopupHtml(r.name, r.postOffice)}
+            />
           </section>
 
           {selected && (
@@ -218,13 +227,16 @@ function SelectedRestaurantCard({
   const phoneHref = normalizePhoneHref(restaurant.phone)
   const links = buildMapLinks(restaurant)
   const searchUrl = buildGoogleSearchUrl(restaurant)
+  const province = getProvinceLabel(restaurant.address)
+  const county = getCountyLabel(restaurant.address)
 
   return (
     <article className="selected-card" aria-label="선택한 식당 정보">
       <header className="selected-card__header">
         <div className="selected-card__title-row">
           <p className="selected-card__post">
-            {restaurant.postOffice} · 추천 {restaurant.recommendationNo}
+            {[province, county].filter(Boolean).join(' ')}
+            <span className="muted"> · {restaurant.postOffice} 추천 {restaurant.recommendationNo}</span>
           </p>
           <button className="icon-button" type="button" onClick={onClose} aria-label="닫기">
             ×
@@ -294,8 +306,6 @@ function StatusCard({ title, description }: { title: string; description: string
 function searchRestaurants(restaurants: Restaurant[], query: string): Restaurant[] {
   const q = query.trim().toLocaleLowerCase('ko-KR')
   if (!q) return restaurants
-  // 상호 + 주소만 매칭. 우체국명은 picker 드롭다운에서, 메뉴/소개 단어는
-  // false positive 가 많아 검색 대상에서 제외.
   return restaurants.filter((r) => {
     const haystack = [r.name, r.address].join(' ').toLocaleLowerCase('ko-KR')
     return haystack.includes(q)

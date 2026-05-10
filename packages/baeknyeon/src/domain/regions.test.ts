@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import type { Restaurant } from './restaurants'
-import { filterByArea, getAreaOptions, getCountyLabel, getProvinceLabel } from './regions'
+import { filterByArea, getAreaOptions, getCountyLabel, getProvinceLabel } from '@food-guides/shared/regions'
 
 const rows: Restaurant[] = [
   restaurant('1', '서울식당', '서울특별시 종로구 세종대로 1'),
@@ -39,7 +39,8 @@ describe('region helpers', () => {
   it('filters restaurants by selected province and optional county', () => {
     expect(filterByArea(rows, { province: '서울' }).map((row) => row.id)).toEqual(['1', '2'])
     expect(filterByArea(rows, { province: '서울', county: '종로구' }).map((row) => row.id)).toEqual(['1'])
-    expect(filterByArea(rows, null)).toEqual([])
+    // shared/regions filterByArea: null selection = no filter applied (returns all rows)
+    expect(filterByArea(rows, null)).toEqual(rows)
   })
 
   it('keeps generated public data in normalized 1차/2차 region labels', () => {

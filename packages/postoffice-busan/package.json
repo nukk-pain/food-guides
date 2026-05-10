@@ -17,7 +17,8 @@
   "dependencies": {
     "leaflet": "^1.9.4",
     "react": "^19.2.5",
-    "react-dom": "^19.2.5"
+    "react-dom": "^19.2.5",
+    "@food-guides/shared": "*"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

@@ -1,6 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import './App.css'
-import { RestaurantMap } from './components/RestaurantMap'
+import {
+  RestaurantMap,
+  buildPopupHtml,
+  filterByArea,
+  getAreaOptions,
+  getCountyLabel,
+  getProvinceLabel,
+  type ProvinceOption,
+} from '@food-guides/shared'
 import { homeUrl, restaurantsDataUrl } from './data/restaurantsData'
 import {
   buildGoogleSearchUrl,
@@ -10,13 +18,6 @@ import {
   safeSbizDetailUrl,
 } from './domain/mapLinks'
 import { filterRestaurantStores, type RawRestaurant, type Restaurant } from './domain/restaurants'
-import {
-  filterByArea,
-  getAreaOptions,
-  getCountyLabel,
-  getProvinceLabel,
-  type ProvinceOption,
-} from './domain/regions'
 
 type LoadState = 'loading' | 'ready' | 'empty' | 'error'
 
@@ -176,7 +177,16 @@ function App() {
           </section>
 
           <section className="map-panel" aria-label="백년가게 식당 지도">
-            <RestaurantMap restaurants={filtered} selectedId={selected?.id} onSelect={handleSelect} />
+            <RestaurantMap
+              restaurants={filtered}
+              selectedId={selected?.id ?? null}
+              onSelect={handleSelect}
+              defaultCenter={[37.5665, 126.978]}
+              defaultZoom={7}
+              markerEmoji="🍽️"
+              ariaLabel="백년가게 식당 지도"
+              buildPopupHtml={(r) => buildPopupHtml(r.name)}
+            />
           </section>
 
           {selected && (

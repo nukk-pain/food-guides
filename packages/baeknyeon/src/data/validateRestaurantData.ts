@@ -1,4 +1,4 @@
-import { getCountyLabel, getProvinceLabel } from '../domain/regions'
+import { getCountyLabel, getProvinceLabel } from '@food-guides/shared/regions'
 import { isRestaurantCategory, type Restaurant } from '../domain/restaurants'
 
 export type RestaurantDataManifest = {

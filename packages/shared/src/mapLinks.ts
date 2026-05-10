@@ -19,8 +19,8 @@ export function buildMapLinks(restaurant: RestaurantLinkInput): MapLinks {
 }
 
 /**
- * Google web (not maps) search URL pre-filled with `name + 시·도 + 시·군·구`,
- * so users can disambiguate between same-named branches across the country
+ * Google web (not maps) search pre-filled with `name + 시·도 + 시·군·구` so
+ * users can disambiguate same-named restaurants across the country
  * (e.g. "함흥냉면" → "함흥냉면 부산광역시 동래구").
  */
 export function buildGoogleSearchUrl(restaurant: RestaurantLinkInput): string {
@@ -32,7 +32,6 @@ export function buildGoogleSearchUrl(restaurant: RestaurantLinkInput): string {
 
 export function normalizePhoneHref(phone?: string): string | null {
   if (!phone) return null
-  // strip non-digits but preserve only the leading phone (drop "(memo)" suffix)
   const phoneOnly = phone.replace(/\s*\(.+$/, '').trim()
   const digits = phoneOnly.replace(/\D/g, '')
   if (!digits) return null

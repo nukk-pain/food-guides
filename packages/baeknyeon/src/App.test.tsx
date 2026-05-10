@@ -3,23 +3,27 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App'
 
-vi.mock('./components/RestaurantMap', () => ({
-  RestaurantMap: ({
-    restaurants,
-    onSelect,
-  }: {
-    restaurants: typeof sampleRestaurants
-    onSelect: (restaurant: (typeof sampleRestaurants)[number]) => void
-  }) => (
-    <div data-testid="restaurant-map">
-      {restaurants.map((restaurant) => (
-        <button key={restaurant.id} type="button" onClick={() => onSelect(restaurant)}>
-          {restaurant.name}
-        </button>
-      ))}
-    </div>
-  ),
-}))
+vi.mock('@food-guides/shared', async () => {
+  const actual = await vi.importActual<typeof import('@food-guides/shared')>('@food-guides/shared')
+  return {
+    ...actual,
+    RestaurantMap: ({
+      restaurants,
+      onSelect,
+    }: {
+      restaurants: typeof sampleRestaurants
+      onSelect: (restaurant: (typeof sampleRestaurants)[number]) => void
+    }) => (
+      <div data-testid="restaurant-map">
+        {restaurants.map((restaurant) => (
+          <button key={restaurant.id} type="button" onClick={() => onSelect(restaurant)}>
+            {restaurant.name}
+          </button>
+        ))}
+      </div>
+    ),
+  }
+})
 
 const sampleRestaurants = [
   {

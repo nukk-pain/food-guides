@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { buildMapLinks, copyableAddressText, normalizePhoneHref, safeSbizDetailUrl } from './mapLinks'
+import { buildMapLinks, copyableAddressText, normalizePhoneHref } from '@food-guides/shared/mapLinks'
+import { safeSbizDetailUrl } from './mapLinks'
 
 describe('restaurant action link helpers', () => {
   it('builds external map search links from restaurant name and address', () => {
