@@ -19,11 +19,11 @@ const GUIDES: Guide[] = [
     name: '백년가게 식당 지도',
     region: '전국',
     source: '소상공인시장진흥공단',
-    publisher: 'sbiz.or.kr',
+    publisher: '공공데이터 기반',
     countLabel: '약 905곳',
     accent: 'green',
     description:
-      '오랜 시간 같은 자리를 지킨 노포·인증 식당을 시·도와 시·군·구로 좁혀 빠르게 둘러봅니다.',
+      '오래 한 자리를 지키며 단골이 많은 노포 식당. 정부가 직접 인증한 곳들이라 믿고 가볼 만합니다.',
     href: 'baeknyeon/',
   },
   {
@@ -35,7 +35,7 @@ const GUIDES: Guide[] = [
     countLabel: '245곳',
     accent: 'red',
     description:
-      '37개 우체국이 추천한 245곳을 권역과 우체국 단위로 살펴봅니다. 메뉴·영업시간·사진까지 한 화면.',
+      '동네를 가장 잘 아는 우체국 직원들이 직접 다녀보고 추천한 진짜 동네 맛집들.',
     href: 'postoffice-busan/',
   },
 ]
