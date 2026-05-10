@@ -6,5 +6,9 @@
   "workspaces": [
     "packages/*",
     "landing"
-  ]
+  ],
+  "scripts": {
+    "build:all": "node scripts/build-all.mjs",
+    "preview:all": "NO_BASE_PATH=1 npm run build:all && npx serve dist"
+  }
 }

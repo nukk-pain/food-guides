@@ -1,0 +1,224 @@
+:root {
+  --color-text: #1a1a1a;
+  --color-muted: #6c6f76;
+  --color-surface: #ffffff;
+  --color-surface-tint: #faf7f0;
+  --color-warm: #fff5e2;
+  --color-line: #ece4d3;
+  --color-line-strong: #d8caaf;
+  --color-focus: #e3a85a;
+
+  --accent-green: #17351f;
+  --accent-green-strong: #0f2716;
+  --accent-red: #d8261d;
+  --accent-red-strong: #a91812;
+
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-xxl: 56px;
+
+  --radius-md: 16px;
+  --radius-lg: 28px;
+
+  --shadow-card: 0 24px 56px rgba(45, 26, 12, 0.08);
+}
+
+.app-shell {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: clamp(28px, 5vw, 64px) clamp(20px, 4vw, 36px) 96px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xxl);
+}
+
+/* ─── Hero ─────────────────────────────────────────────── */
+.hero {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  max-width: 780px;
+}
+
+.hero .eyebrow {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: lowercase;
+  color: var(--color-muted);
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: clamp(2.25rem, 5.5vw, 3.75rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+}
+
+.hero .lede {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  max-width: 60ch;
+}
+
+/* ─── Guide cards ──────────────────────────────────────── */
+.guide-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(360px, 100%), 1fr));
+  gap: var(--space-lg);
+}
+
+.guide-card {
+  --accent: var(--color-text);
+  --accent-strong: var(--color-text);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  padding: var(--space-xl);
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  color: var(--color-text);
+  box-shadow: var(--shadow-card);
+  transition: transform 160ms ease, border-color 160ms ease;
+  position: relative;
+}
+
+.guide-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent);
+}
+
+.guide-card:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 4px;
+}
+
+.guide-card--green {
+  --accent: var(--accent-green);
+  --accent-strong: var(--accent-green-strong);
+}
+
+.guide-card--red {
+  --accent: var(--accent-red);
+  --accent-strong: var(--accent-red-strong);
+}
+
+.guide-card__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-sm);
+}
+
+.guide-card__count {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.guide-card__region {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--color-muted);
+}
+
+.guide-card__name {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+}
+
+.guide-card__desc {
+  margin: 0;
+  color: var(--color-muted);
+  line-height: 1.55;
+}
+
+.guide-card__meta {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: baseline;
+  font-size: 0.8125rem;
+  color: var(--color-muted);
+  border-top: 1px solid var(--color-line);
+  padding-top: var(--space-sm);
+}
+
+.guide-card__publisher {
+  margin-left: auto;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.guide-card__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 800;
+  color: var(--accent);
+}
+
+.guide-card:hover .guide-card__cta {
+  color: var(--accent-strong);
+}
+
+/* ─── About ─────────────────────────────────────────────── */
+.about {
+  background: var(--color-surface-tint);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  max-width: 780px;
+}
+
+.about h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  letter-spacing: -0.01em;
+}
+
+.about p {
+  margin: 0;
+  color: var(--color-text);
+  line-height: 1.6;
+}
+
+.about .muted {
+  color: var(--color-muted);
+  font-size: 0.875rem;
+}
+
+.about a {
+  color: var(--color-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ─── Footer ────────────────────────────────────────────── */
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  align-items: center;
+  font-size: 0.8125rem;
+  color: var(--color-muted);
+  border-top: 1px solid var(--color-line);
+  padding-top: var(--space-md);
+}
