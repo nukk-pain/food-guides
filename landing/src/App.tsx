@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import './App.css'
 
 type Guide = {
@@ -41,21 +41,15 @@ const GUIDES: Guide[] = [
 ]
 
 function App() {
-  const [now] = useState(() => new Date().toISOString().slice(0, 10))
-
   useEffect(() => {
-    document.title = 'food-guides — 식당 추천 지도'
+    document.title = '맛집가이드 지도'
   }, [])
 
   return (
     <main className="app-shell">
       <header className="hero" aria-labelledby="page-title">
-        <p className="eyebrow">food-guides</p>
-        <h1 id="page-title">공공·기관 식당 추천을 한 지도에</h1>
-        <p className="lede">
-          여러 곳에 흩어진 식당 추천 자료를 같은 정적 지도 패턴으로 정리합니다. 검색·필터·외부 지도
-          연결까지, 데이터 출처는 그대로 유지하면서 휴대폰에서 바로 쓸 수 있는 형태로.
-        </p>
+        <h1 id="page-title">맛집가이드 지도</h1>
+        <p className="lede">공공기관이 추천한 식당을 지도에서 확인하세요.</p>
       </header>
 
       <section className="guide-grid" aria-label="가이드 목록">
@@ -77,28 +71,6 @@ function App() {
           </a>
         ))}
       </section>
-
-      <section className="about" aria-label="이 사이트는">
-        <h2>이 사이트는</h2>
-        <p>
-          공공·기관이 만든 좋은 식당 자료가 PDF나 책자로 흩어져 있는 경우가 많습니다. food-guides는
-          그런 자료를 가공해 정적 웹지도로 옮기는 모음입니다. 백엔드/DB 없이 GitHub Pages만 사용해
-          비용 없이 운영합니다. 출처는 각 가이드 페이지에서 확인할 수 있습니다.
-        </p>
-        <p className="muted">
-          새 가이드 제안이나 데이터 오류 제보는{' '}
-          <a href="https://github.com/" rel="noreferrer" target="_blank">
-            GitHub repository
-          </a>
-          {' '}이슈로 부탁드립니다.
-        </p>
-      </section>
-
-      <footer className="footer" aria-label="푸터">
-        <span>마지막 빌드 {now}</span>
-        <span aria-hidden="true">·</span>
-        <span>정적 사이트 (GitHub Pages)</span>
-      </footer>
     </main>
   )
 }

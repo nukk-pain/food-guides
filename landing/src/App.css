@@ -43,15 +43,6 @@
   max-width: 780px;
 }
 
-.hero .eyebrow {
-  margin: 0;
-  font-size: 0.875rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: lowercase;
-  color: var(--color-muted);
-}
-
 .hero h1 {
   margin: 0;
   font-size: clamp(2.25rem, 5.5vw, 3.75rem);
@@ -176,49 +167,3 @@
   color: var(--accent-strong);
 }
 
-/* ─── About ─────────────────────────────────────────────── */
-.about {
-  background: var(--color-surface-tint);
-  border: 1px solid var(--color-line);
-  border-radius: var(--radius-lg);
-  padding: var(--space-xl);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-md);
-  max-width: 780px;
-}
-
-.about h2 {
-  margin: 0;
-  font-size: 1.25rem;
-  letter-spacing: -0.01em;
-}
-
-.about p {
-  margin: 0;
-  color: var(--color-text);
-  line-height: 1.6;
-}
-
-.about .muted {
-  color: var(--color-muted);
-  font-size: 0.875rem;
-}
-
-.about a {
-  color: var(--color-text);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
-/* ─── Footer ────────────────────────────────────────────── */
-.footer {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-sm);
-  align-items: center;
-  font-size: 0.8125rem;
-  color: var(--color-muted);
-  border-top: 1px solid var(--color-line);
-  padding-top: var(--space-md);
-}
